@@ -1,0 +1,13 @@
+{
+  "stage": "SHORT_PUT",
+  "contract_symbol": "TSLA260508P00360000",
+  "contract_strike": 360.0,
+  "contract_expiry": "2026-05-08",
+  "contract_premium": 4.38,
+  "shares_owned": 0,
+  "assignment_price": 0.0,
+  "cost_basis_per_share": 0.0,
+  "total_premium_per_share": 0.0,
+  "cycles_completed": 0,
+  "cycle_start_date": "2026-04-17"
+}

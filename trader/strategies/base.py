@@ -26,5 +26,5 @@ class BaseStrategy(ABC):
     def run(self, symbol: str) -> None:
         signal = self.evaluate(symbol)
         print(f"[{self.__class__.__name__}] {symbol} → {signal.upper()}")
-        if signal in ("buy", "sell"):
+        if signal != "hold":
             self.execute(symbol, signal)

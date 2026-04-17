@@ -4,7 +4,31 @@
       "WebFetch(domain:www.capitoltrades.com)",
       "Skill(schedule)",
       "Skill(schedule:*)",
-      "mcp__scheduled-tasks__create_scheduled_task"
+      "mcp__scheduled-tasks__create_scheduled_task",
+      "Bash(pip show *)",
+      "Bash(pip list *)",
+      "Bash(python3 -c \"from datetime import datetime; import pytz; et = pytz.timezone\\('America/New_York'\\); now = et.localize\\(datetime.now\\(pytz.utc\\).replace\\(tzinfo=None\\)\\) if False else datetime.now\\(pytz.utc\\).astimezone\\(et\\); print\\('ET:', now.strftime\\('%H:%M:%S %Z'\\)\\)\")",
+      "Bash(python3 -c \"from datetime import datetime, timezone, timedelta; utc = datetime.now\\(timezone.utc\\); et = utc - timedelta\\(hours=4\\); print\\('ET \\(approx EDT\\):', et.strftime\\('%H:%M:%S'\\)\\)\")",
+      "Read(//c/Users/dhira//**)",
+      "Read(//c/Users/dhira/**)",
+      "Bash(python -c \"import alpaca_trade_api; print\\('alpaca ok'\\)\")",
+      "Bash(python wheel_strategy/main.py --summary)",
+      "Bash(python3 -m pip list)",
+      "Bash(python3 -c \"import sys; print\\(sys.executable, sys.version\\)\")",
+      "Bash(pip install *)",
+      "Bash(python copy_trading/main.py)",
+      "Bash(python main.py --once)",
+      "Bash(PYTHONIOENCODING=utf-8 python main.py --once)",
+      "Bash(python -c \"from datetime import datetime, timezone, timedelta; utc = datetime.now\\(timezone.utc\\); et = utc - timedelta\\(hours=4\\); print\\('ET \\(EDT\\):', et.strftime\\('%H:%M:%S'\\)\\); h,m = et.hour, et.minute; print\\('Market open' if \\(h > 9 or \\(h == 9 and m >= 30\\)\\) and h < 16 else 'Market closed'\\)\")",
+      "Bash(python wheel_strategy/main.py --check)",
+      "Bash(PYTHONUTF8=1 python wheel_strategy/main.py --check)",
+      "Bash(python -c \"from datetime import datetime; import pytz; et = pytz.timezone\\('America/New_York'\\); now = et.localize\\(datetime.now\\(pytz.utc\\).replace\\(tzinfo=None\\)\\) if False else datetime.now\\(pytz.utc\\).astimezone\\(et\\); print\\(now.strftime\\('%Y-%m-%d %H:%M:%S %Z'\\)\\); h,m = now.hour, now.minute; open_ = \\(h > 9 or \\(h==9 and m>=30\\)\\) and h < 16; print\\('OPEN' if open_ else 'CLOSED'\\)\")",
+      "Bash(python -c \"import json; d=json.load\\(open\\('copy_trading/state.json'\\)\\); print\\('last_checked:', d.get\\('last_checked'\\)\\); print\\('executed IDs:', len\\(d.get\\('executed_ids', []\\)\\)\\)\")",
+      "Bash(python -c \"import json; d=json.load\\(open\\('copy_trading/state.json'\\)\\); print\\(json.dumps\\(d, indent=2\\)\\)\")",
+      "Bash(PYTHONIOENCODING=utf-8 PYTHONUTF8=1 python main.py --once)",
+      "Bash(python3 -c \"from datetime import datetime; import pytz; et = pytz.timezone\\('US/Eastern'\\); now = datetime.now\\(et\\); print\\(f'ET: {now.strftime\\(\\\\\"%Y-%m-%d %H:%M:%S %Z\\\\\"\\)}'\\); print\\(f'Weekday: {now.weekday\\(\\)}'\\); print\\(f'Hour: {now.hour}, Minute: {now.minute}'\\)\")",
+      "Bash(python -c \"from datetime import datetime; import pytz; et = pytz.timezone\\('US/Eastern'\\); now = datetime.now\\(et\\); print\\(f'ET: {now.strftime\\(\\\\\"%Y-%m-%d %H:%M:%S %Z\\\\\"\\)}'\\); print\\(f'Weekday: {now.weekday\\(\\)}'\\); print\\(f'Hour: {now.hour}, Minute: {now.minute}'\\)\")",
+      "Bash(python -c \"from datetime import datetime; import pytz; et=pytz.timezone\\('America/New_York'\\); print\\('ET:', datetime.now\\(et\\).strftime\\('%H:%M:%S %Z %A'\\)\\)\")"
     ]
   }
 }
