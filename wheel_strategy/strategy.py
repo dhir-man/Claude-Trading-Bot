@@ -16,13 +16,14 @@ import sys
 from datetime import date
 from typing import Optional
 
+import config as alpaca_config
 from alpaca.data.historical import OptionHistoricalDataClient
 from alpaca.data.historical import StockHistoricalDataClient
 from alpaca.data.requests import StockLatestTradeRequest
 from alpaca.trading.client import TradingClient
 from alpaca.trading.enums import OrderSide, TimeInForce
-from alpaca.trading.requests import LimitOrderRequest
 
+from trader.order_gate import submit_limit
 import wheel_strategy.config as cfg
 import wheel_strategy.finder as finder
 import wheel_strategy.state as st
@@ -154,8 +155,8 @@ class WheelStrategy:
             )
             return
 
-        limit_price = round(mid - cfg.SELL_LIMIT_OFFSET, 2)
-        order = self._sell_to_open(contract.symbol, cfg.PUT_CONTRACTS, limit_price)
+        limit_price   = round(mid - cfg.SELL_LIMIT_OFFSET, 2)
+        order, costs  = self._sell_to_open(contract.symbol, cfg.PUT_CONTRACTS, limit_price)
         if not order:
             return
 
@@ -176,10 +177,14 @@ class WheelStrategy:
             premium=mid,
             limit=limit_price,
             extra={
-                "Cash Required":      f"${required_cash:,.2f}  (secured)",
-                "Cash Available":     f"${float(account.cash):,.2f}",
-                "Max Loss if Assigned": f"${(strike - mid) * 100 * cfg.PUT_CONTRACTS:,.2f}",
-                "Close Target (50%)": f"${mid * (1 - cfg.EARLY_CLOSE_PROFIT_PCT):.2f}/sh",
+                "Cash Required":         f"${required_cash:,.2f}  (secured)",
+                "Cash Available":         f"${float(account.cash):,.2f}",
+                "Max Loss if Assigned":   f"${(strike - mid) * 100 * cfg.PUT_CONTRACTS:,.2f}",
+                "Close Target (50%)":     f"${mid * (1 - cfg.EARLY_CLOSE_PROFIT_PCT):.2f}/sh",
+                "─ Costs":               "─────────────────────────",
+                "Option Commission":     f"${costs.commission:.2f}  ($0.65/contract)",
+                "Est. Slippage":         f"${costs.slippage_estimate:.2f}  (2.5% of premium)",
+                "Execution Mode":        alpaca_config.EXECUTION_MODE.value,
             },
         )
 
@@ -262,8 +267,8 @@ class WheelStrategy:
             )
             return
 
-        limit_price = round(mid - cfg.SELL_LIMIT_OFFSET, 2)
-        order = self._sell_to_open(contract.symbol, cfg.CALL_CONTRACTS, limit_price)
+        limit_price   = round(mid - cfg.SELL_LIMIT_OFFSET, 2)
+        order, costs  = self._sell_to_open(contract.symbol, cfg.CALL_CONTRACTS, limit_price)
         if not order:
             return
 
@@ -283,9 +288,13 @@ class WheelStrategy:
             premium=mid,
             limit=limit_price,
             extra={
-                "Adjusted Cost Basis":  f"${state.cost_basis_per_share:.2f}/sh",
-                "Profit if Called Away":f"${profit_if_called:,.2f}",
-                "Close Target (50%)":   f"${mid * (1 - cfg.EARLY_CLOSE_PROFIT_PCT):.2f}/sh",
+                "Adjusted Cost Basis":   f"${state.cost_basis_per_share:.2f}/sh",
+                "Profit if Called Away": f"${profit_if_called:,.2f}",
+                "Close Target (50%)":    f"${mid * (1 - cfg.EARLY_CLOSE_PROFIT_PCT):.2f}/sh",
+                "─ Costs":               "─────────────────────────",
+                "Option Commission":     f"${costs.commission:.2f}",
+                "Est. Slippage":         f"${costs.slippage_estimate:.2f}",
+                "Execution Mode":        alpaca_config.EXECUTION_MODE.value,
             },
         )
 
@@ -347,32 +356,23 @@ class WheelStrategy:
 
     def _sell_to_open(self, symbol: str, qty: int, limit_price: float):
         try:
-            return self.trading.submit_order(
-                LimitOrderRequest(
-                    symbol         = symbol,
-                    qty            = qty,
-                    side           = OrderSide.SELL,
-                    limit_price    = max(limit_price, 0.01),
-                    time_in_force  = TimeInForce.DAY,
-                )
+            order, costs = submit_limit(
+                self.trading, alpaca_config.EXECUTION_MODE,
+                symbol, qty, OrderSide.SELL, limit_price, is_option=True,
             )
+            return order, costs
         except Exception as exc:
             print(f"[Wheel] Sell-to-open failed for {symbol}: {exc}")
-            return None
+            return None, None
 
     def _close_contract(self, state: WheelState, current_mid: float, kind: str, reason: str) -> None:
         limit_price  = round(current_mid + cfg.BUY_LIMIT_OFFSET, 2)
         qty          = cfg.PUT_CONTRACTS if kind == "PUT" else cfg.CALL_CONTRACTS
         profit_share = state.contract_premium - current_mid
         try:
-            order = self.trading.submit_order(
-                LimitOrderRequest(
-                    symbol        = state.contract_symbol,
-                    qty           = qty,
-                    side          = OrderSide.BUY,
-                    limit_price   = limit_price,
-                    time_in_force = TimeInForce.DAY,
-                )
+            order, costs = submit_limit(
+                self.trading, alpaca_config.EXECUTION_MODE,
+                state.contract_symbol, qty, OrderSide.BUY, limit_price, is_option=True,
             )
             # The premium we keep = what we collected − what we paid to close
             kept_per_share = state.contract_premium - current_mid

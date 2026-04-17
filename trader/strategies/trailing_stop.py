@@ -31,13 +31,14 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Set
 
+import config
 from alpaca.data.historical import StockHistoricalDataClient
 from alpaca.data.requests import StockBarsRequest, StockLatestTradeRequest
 from alpaca.data.timeframe import TimeFrame
 from alpaca.trading.client import TradingClient
 from alpaca.trading.enums import OrderSide, TimeInForce
-from alpaca.trading.requests import MarketOrderRequest
 
+from trader.order_gate import submit_market
 from trader.strategies.base import BaseStrategy
 
 # ── Stop mode ─────────────────────────────────────────────────────────────
@@ -226,17 +227,15 @@ class TrailingStopStrategy(BaseStrategy):
             atr   = self._compute_atr(symbol) if USE_ATR_STOP else 0.0
             stop  = (self._atr_stop(price, atr) if USE_ATR_STOP
                      else price * (1 - STOP_LOSS_PCT))
-            order = self._submit(symbol, OrderSide.BUY, INITIAL_SHARES)
+            order, costs = self._submit(symbol, OrderSide.BUY, INITIAL_SHARES, price)
             self._positions[symbol] = PositionState(
                 entry_price=price, shares=INITIAL_SHARES,
                 stop_loss=stop, peak_price=price, last_atr=atr,
             )
-            if USE_ATR_STOP:
-                stop_label   = f"${stop:.2f}  (entry − {ATR_MULTIPLIER}×ATR,  ATR={atr:.2f})"
-                trail_label  = f"auto-adapts to ATR every tick"
-            else:
-                stop_label   = f"${stop:.2f}  (entry − {STOP_LOSS_PCT*100:.0f}%)"
-                trail_label  = f"${price*(1+TRAIL_ACTIVATE_PCT):.2f}  (+{TRAIL_ACTIVATE_PCT*100:.0f}%)"
+            stop_label  = (f"${stop:.2f}  (entry − {ATR_MULTIPLIER}×ATR, ATR={atr:.2f})"
+                           if USE_ATR_STOP else f"${stop:.2f}  (entry − {STOP_LOSS_PCT*100:.0f}%)")
+            trail_label = ("auto-adapts to ATR every tick" if USE_ATR_STOP
+                           else f"${price*(1+TRAIL_ACTIVATE_PCT):.2f}  (+{TRAIL_ACTIVATE_PCT*100:.0f}%)")
             self._print_summary(
                 order, price, "Initial entry",
                 extra={
@@ -244,22 +243,30 @@ class TrailingStopStrategy(BaseStrategy):
                     "Stop Loss Set":      stop_label,
                     "Trail":              trail_label,
                     "Total Held":         f"{INITIAL_SHARES} shares",
+                    "─ Costs":            "─────────────────────",
+                    "Commission":         f"${costs.commission:.2f}",
+                    "Est. Slippage":      f"${costs.slippage_estimate:.2f}",
+                    "Total Fees+Slip":    f"${costs.total_fees + costs.slippage_estimate:.2f}",
                 },
             )
 
         elif signal == "stop_loss":
             state   = self._positions[symbol]
-            order   = self._submit(symbol, OrderSide.SELL, state.shares)
+            order, costs = self._submit(symbol, OrderSide.SELL, state.shares, price)
             pnl_pct = (price - state.entry_price) / state.entry_price * 100
             atr_str = f"ATR={state.last_atr:.2f}" if USE_ATR_STOP else ""
             self._print_summary(
                 order, price, "Stop loss triggered",
                 extra={
-                    "Entry Price":  f"${state.entry_price:.2f}",
-                    "Stop Floor":   f"${state.stop_loss:.2f}  {atr_str}",
-                    "Exit Price":   f"${price:.2f}",
-                    "P&L":          f"{pnl_pct:+.1f}%",
-                    "Shares Sold":  str(state.shares),
+                    "Entry Price":        f"${state.entry_price:.2f}",
+                    "Stop Floor":         f"${state.stop_loss:.2f}  {atr_str}",
+                    "Exit Price":         f"${price:.2f}",
+                    "P&L (pre-tax)":      f"{pnl_pct:+.1f}%",
+                    "Shares Sold":        str(state.shares),
+                    "─ Costs":            "─────────────────────",
+                    "SEC + FINRA Fees":   f"${costs.sec_fee + costs.finra_taf:.4f}",
+                    "Est. Slippage":      f"${costs.slippage_estimate:.2f}",
+                    "Tax Reserve (est.)": f"${costs.tax_reserve_est:.2f}  (short-term rate)",
                 },
             )
             del self._positions[symbol]
@@ -269,30 +276,32 @@ class TrailingStopStrategy(BaseStrategy):
             lvl_id   = int(signal.split("_")[1])
             all_lvls = {lid: (d, s) for lid, d, s in _ALL_LEVELS + _DEEP_LEVELS}
             drop_thr, shares = all_lvls[lvl_id]
-            order = self._submit(symbol, OrderSide.BUY, shares)
+            order, costs = self._submit(symbol, OrderSide.BUY, shares, price)
             state.shares += shares
             state.ladder_hit.add(lvl_id)
             self._print_summary(
                 order, price, f"Ladder L{lvl_id}  (−{drop_thr*100:.0f}% dip buy)",
                 extra={
-                    "Entry Price":  f"${state.entry_price:.2f}",
-                    "Current Drop": f"−{(state.entry_price-price)/state.entry_price*100:.1f}%",
-                    "ATR":          f"{state.last_atr:.2f}" if USE_ATR_STOP else "N/A (pct mode)",
-                    "Shares Added": str(shares),
-                    "Total Held":   f"{state.shares} shares",
-                    "Stop Floor":   f"${state.stop_loss:.2f}",
+                    "Entry Price":     f"${state.entry_price:.2f}",
+                    "Current Drop":    f"−{(state.entry_price-price)/state.entry_price*100:.1f}%",
+                    "ATR":             f"{state.last_atr:.2f}" if USE_ATR_STOP else "N/A (pct mode)",
+                    "Shares Added":    str(shares),
+                    "Total Held":      f"{state.shares} shares",
+                    "Stop Floor":      f"${state.stop_loss:.2f}",
+                    "─ Costs":         "─────────────────────",
+                    "Commission":      f"${costs.commission:.2f}",
+                    "Est. Slippage":   f"${costs.slippage_estimate:.2f}",
                 },
             )
 
     # ── Helpers ───────────────────────────────────────────────────────────
 
-    def _submit(self, symbol: str, side: OrderSide, qty: int):
-        return self.trading.submit_order(
-            MarketOrderRequest(
-                symbol=symbol, qty=qty, side=side,
-                time_in_force=TimeInForce.DAY,
-            )
+    def _submit(self, symbol: str, side: OrderSide, qty: int, est_price: float):
+        order, costs = submit_market(
+            self.trading, config.EXECUTION_MODE,
+            symbol, qty, side, est_price, is_option=False,
         )
+        return order, costs
 
     def _print_summary(self, order, est_price: float, reason: str, extra: dict | None = None) -> None:
         side      = order.side.value.upper()
