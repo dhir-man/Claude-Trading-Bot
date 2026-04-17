@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:www.capitoltrades.com)"
+      "WebFetch(domain:www.capitoltrades.com)",
+      "Skill(schedule)",
+      "Skill(schedule:*)",
+      "mcp__scheduled-tasks__create_scheduled_task"
     ]
   }
 }
