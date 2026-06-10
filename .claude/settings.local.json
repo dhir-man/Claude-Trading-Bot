@@ -28,7 +28,19 @@
       "Bash(PYTHONIOENCODING=utf-8 PYTHONUTF8=1 python main.py --once)",
       "Bash(python3 -c \"from datetime import datetime; import pytz; et = pytz.timezone\\('US/Eastern'\\); now = datetime.now\\(et\\); print\\(f'ET: {now.strftime\\(\\\\\"%Y-%m-%d %H:%M:%S %Z\\\\\"\\)}'\\); print\\(f'Weekday: {now.weekday\\(\\)}'\\); print\\(f'Hour: {now.hour}, Minute: {now.minute}'\\)\")",
       "Bash(python -c \"from datetime import datetime; import pytz; et = pytz.timezone\\('US/Eastern'\\); now = datetime.now\\(et\\); print\\(f'ET: {now.strftime\\(\\\\\"%Y-%m-%d %H:%M:%S %Z\\\\\"\\)}'\\); print\\(f'Weekday: {now.weekday\\(\\)}'\\); print\\(f'Hour: {now.hour}, Minute: {now.minute}'\\)\")",
-      "Bash(python -c \"from datetime import datetime; import pytz; et=pytz.timezone\\('America/New_York'\\); print\\('ET:', datetime.now\\(et\\).strftime\\('%H:%M:%S %Z %A'\\)\\)\")"
+      "Bash(python -c \"from datetime import datetime; import pytz; et=pytz.timezone\\('America/New_York'\\); print\\('ET:', datetime.now\\(et\\).strftime\\('%H:%M:%S %Z %A'\\)\\)\")",
+      "Bash(python -c \"from datetime import datetime; import pytz; et = pytz.timezone\\('America/New_York'\\); now = datetime.now\\(et\\); print\\(f'ET time: {now.strftime\\(\\\\\"%Y-%m-%d %H:%M:%S %Z\\\\\"\\)}'\\); print\\(f'Weekday: {now.weekday\\(\\)} \\(0=Mon, 6=Sun\\)'\\); is_open = now.weekday\\(\\) < 5 and \\(now.hour > 9 or \\(now.hour == 9 and now.minute >= 30\\)\\) and now.hour < 16; print\\(f'Market open: {is_open}'\\)\")",
+      "Bash(python -c \"from datetime import datetime; import pytz; et = pytz.timezone\\('US/Eastern'\\); now = datetime.now\\(et\\); print\\(now.strftime\\('%Y-%m-%d %H:%M:%S %Z'\\)\\)\")",
+      "WebSearch",
+      "WebFetch(domain:siliconangle.com)",
+      "Bash(node llm-eval-deck.js)",
+      "Bash(npm install *)",
+      "Bash(python scripts/office/soffice.py --headless --convert-to pdf \"C:\\\\Users\\\\dhira\\\\Documents\\\\Obsidian-Vaults\\\\Claude-Vault\\\\Trading\\\\llm-coding-eval\\\\LLM-Coding-Eval-Report.pptx\")",
+      "Bash(powershell -Command \"Get-Command soffice -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source; if \\(-not \\(Get-Command soffice -ErrorAction SilentlyContinue\\)\\) { 'LibreOffice not found' }\")",
+      "Bash(git -C \"C:\\\\Users\\\\dhira\\\\Documents\\\\Obsidian-Vaults\\\\Claude-Vault\\\\Trading\" status)",
+      "Bash(git -C \"C:\\\\Users\\\\dhira\\\\Documents\\\\Obsidian-Vaults\\\\Claude-Vault\\\\Trading\" log --oneline -5)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }

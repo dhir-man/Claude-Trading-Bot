@@ -1,0 +1,49 @@
+{
+  "name": "llm-coding-eval",
+  "version": "1.0.0",
+  "description": "Evaluation harness for free-for-commercial-use LLMs: Qwen3-Coder-32B, DeepSeek-Coder-V3, GLM-5",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "jest --runInBand --forceExit",
+    "test:qwen32b": "MODEL=qwen3-coder-32b jest --runInBand --forceExit",
+    "test:deepseek": "MODEL=deepseek-coder-v3 jest --runInBand --forceExit",
+    "test:glm5": "MODEL=glm-5 jest --runInBand --forceExit",
+    "test:all": "node dist/run-all.js",
+    "eval:leetcode": "node dist/eval-leetcode.js",
+    "eval:scheduler": "node dist/eval-scheduler.js",
+    "server:start": "node dist/api-server.js",
+    "setup:ollama": "node scripts/setup-ollama.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "express": "^4.19.2",
+    "node-cron": "^3.0.3",
+    "dotenv": "^16.4.5",
+    "chalk": "^4.1.2",
+    "table": "^6.8.1",
+    "ora": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.14.2",
+    "@types/node-cron": "^3.0.11",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.4",
+    "typescript": "^5.4.5"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testTimeout": 120000,
+    "testMatch": ["**/tests/**/*.test.ts"],
+    "globals": {
+      "ts-jest": {
+        "tsconfig": "tsconfig.json"
+      }
+    }
+  }
+}
