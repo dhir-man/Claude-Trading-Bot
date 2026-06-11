@@ -1,0 +1,231 @@
+{
+  "generatedAt": "2026-06-11T22:59:38.512Z",
+  "models": [
+    {
+      "key": "qwen7b",
+      "label": "Qwen2.5-Coder 32B",
+      "modelId": "qwen2.5-coder:32b-instruct-q4_K_M",
+      "leetcode": [
+        {
+          "id": 1,
+          "title": "Two Sum",
+          "difficulty": "Easy",
+          "passed": 4,
+          "total": 4,
+          "latencyMs": 27536,
+          "tokens": 378
+        },
+        {
+          "id": 20,
+          "title": "Valid Parentheses",
+          "difficulty": "Easy",
+          "passed": 6,
+          "total": 6,
+          "latencyMs": 21363,
+          "tokens": 332
+        },
+        {
+          "id": 21,
+          "title": "Merge Two Sorted Lists",
+          "difficulty": "Easy",
+          "passed": 4,
+          "total": 4,
+          "latencyMs": 23707,
+          "tokens": 374
+        },
+        {
+          "id": 3,
+          "title": "Longest Substring Without Repeating Characters",
+          "difficulty": "Medium",
+          "passed": 6,
+          "total": 6,
+          "latencyMs": 18983,
+          "tokens": 294
+        },
+        {
+          "id": 53,
+          "title": "Maximum Subarray (Kadane's Algorithm)",
+          "difficulty": "Medium",
+          "passed": 4,
+          "total": 4,
+          "latencyMs": 17841,
+          "tokens": 298
+        },
+        {
+          "id": 200,
+          "title": "Number of Islands",
+          "difficulty": "Medium",
+          "passed": 2,
+          "total": 2,
+          "latencyMs": 34196,
+          "tokens": 406
+        },
+        {
+          "id": 206,
+          "title": "Reverse Linked List",
+          "difficulty": "Easy",
+          "passed": 3,
+          "total": 3,
+          "latencyMs": 4480,
+          "tokens": 162
+        },
+        {
+          "id": 42,
+          "title": "Trapping Rain Water",
+          "difficulty": "Hard",
+          "passed": 4,
+          "total": 4,
+          "latencyMs": 27062,
+          "tokens": 368
+        },
+        {
+          "id": 76,
+          "title": "Minimum Window Substring",
+          "difficulty": "Hard",
+          "passed": 4,
+          "total": 4,
+          "latencyMs": 50456,
+          "tokens": 510
+        },
+        {
+          "id": 295,
+          "title": "Find Median from Data Stream",
+          "difficulty": "Hard",
+          "passed": 0,
+          "total": 1,
+          "latencyMs": 124854,
+          "tokens": 1005
+        }
+      ],
+      "scheduler": {
+        "generated": true,
+        "classFound": true,
+        "passed": 26,
+        "total": 26,
+        "latencyMs": 84018,
+        "tokens": 1029
+      },
+      "summary": {
+        "lcPassed": 37,
+        "lcTotal": 38,
+        "lcRate": 0.9736842105263158,
+        "schedPassed": 26,
+        "schedTotal": 26,
+        "avgLatencyMs": 35048
+      }
+    },
+    {
+      "key": "deepseek",
+      "label": "DeepSeek-Coder 33B",
+      "modelId": "deepseek-coder:33b-instruct-q4_K_M",
+      "leetcode": [
+        {
+          "id": 1,
+          "title": "Two Sum",
+          "difficulty": "Easy",
+          "passed": 4,
+          "total": 4,
+          "latencyMs": 33004,
+          "tokens": 468
+        },
+        {
+          "id": 20,
+          "title": "Valid Parentheses",
+          "difficulty": "Easy",
+          "passed": 6,
+          "total": 6,
+          "latencyMs": 32932,
+          "tokens": 435
+        },
+        {
+          "id": 21,
+          "title": "Merge Two Sorted Lists",
+          "difficulty": "Easy",
+          "passed": 4,
+          "total": 4,
+          "latencyMs": 35951,
+          "tokens": 479
+        },
+        {
+          "id": 3,
+          "title": "Longest Substring Without Repeating Characters",
+          "difficulty": "Medium",
+          "passed": 6,
+          "total": 6,
+          "latencyMs": 28187,
+          "tokens": 377
+        },
+        {
+          "id": 53,
+          "title": "Maximum Subarray (Kadane's Algorithm)",
+          "difficulty": "Medium",
+          "passed": 4,
+          "total": 4,
+          "latencyMs": 20375,
+          "tokens": 350
+        },
+        {
+          "id": 200,
+          "title": "Number of Islands",
+          "difficulty": "Medium",
+          "passed": 2,
+          "total": 2,
+          "latencyMs": 43287,
+          "tokens": 482
+        },
+        {
+          "id": 206,
+          "title": "Reverse Linked List",
+          "difficulty": "Easy",
+          "passed": 3,
+          "total": 3,
+          "latencyMs": 17986,
+          "tokens": 275
+        },
+        {
+          "id": 42,
+          "title": "Trapping Rain Water",
+          "difficulty": "Hard",
+          "passed": 4,
+          "total": 4,
+          "latencyMs": 34169,
+          "tokens": 445
+        },
+        {
+          "id": 76,
+          "title": "Minimum Window Substring",
+          "difficulty": "Hard",
+          "passed": 4,
+          "total": 4,
+          "latencyMs": 60735,
+          "tokens": 584
+        },
+        {
+          "id": 295,
+          "title": "Find Median from Data Stream",
+          "difficulty": "Hard",
+          "passed": 0,
+          "total": 1,
+          "latencyMs": 36557,
+          "tokens": 461
+        }
+      ],
+      "scheduler": {
+        "generated": true,
+        "classFound": true,
+        "passed": 26,
+        "total": 26,
+        "latencyMs": 127710,
+        "tokens": 1395
+      },
+      "summary": {
+        "lcPassed": 37,
+        "lcTotal": 38,
+        "lcRate": 0.9736842105263158,
+        "schedPassed": 26,
+        "schedTotal": 26,
+        "avgLatencyMs": 34318
+      }
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+
+  LLM CODING EVAL — RESULTS
+  Generated: 2026-06-11T22:59:38.512Z
+  Suite: 10 LeetCode problems (Easy→Hard) + 25-test Scheduler app
+  Runtime: local via Ollama, TypeScript output, sandboxed execution
+
++════════════════════════════════════════════════════════════════════════════+
+|                             Qwen2.5-Coder 32B                              |
+|            qwen2.5-coder:32b-instruct-q4_K_M  ·  local · Ollama            |
++════════════════════════════════════════════════════════════════════════════+
+|                                                                            |
+|   LeetCode pass rate                                          37/38  (97%) |
+|      ███████████████████░                                                  |
+|   Scheduler app (25 behavioural tests)                               26/26 |
+|      ████████████████████                                                  |
+|   Avg latency / problem                                           35048 ms |
+|   Avg tokens / problem                                                 413 |
+|                                                                            |
++────────────────────────────────────────────────────────────────────────────+
+|   LEETCODE — by problem                                                    |
+|                                                                            |
+|   [PASS] Easy   LC#1 Two Sum                                  4/4  27536ms |
+|   [PASS] Easy   LC#20 Valid Parentheses                       6/6  21363ms |
+|   [PASS] Easy   LC#21 Merge Two Sorted Lists                  4/4  23707ms |
+|   [PASS] Medium LC#3 Longest Substring Without Repeating      6/6  18983ms |
+|   [PASS] Medium LC#53 Maximum Subarray (Kadane's Algorit      4/4  17841ms |
+|   [PASS] Medium LC#200 Number of Islands                      2/2  34196ms |
+|   [PASS] Easy   LC#206 Reverse Linked List                     3/3  4480ms |
+|   [PASS] Hard   LC#42 Trapping Rain Water                     4/4  27062ms |
+|   [PASS] Hard   LC#76 Minimum Window Substring                4/4  50456ms |
+|   [FAIL] Hard   LC#295 Find Median from Data Stream          0/1  124854ms |
+|                                                                            |
++────────────────────────────────────────────────────────────────────────────+
+|   SCHEDULER APP — ReminderService generation                               |
+|                                                                            |
+|   Class generated                                                      yes |
+|   Class exported correctly                                             yes |
+|   Tests passed                                                       26/26 |
+|   Generation latency                                              84018 ms |
+|   Generation tokens                                                   1029 |
+|                                                                            |
++════════════════════════════════════════════════════════════════════════════+
+
+
++════════════════════════════════════════════════════════════════════════════+
+|                             DeepSeek-Coder 33B                             |
+|           deepseek-coder:33b-instruct-q4_K_M  ·  local · Ollama            |
++════════════════════════════════════════════════════════════════════════════+
+|                                                                            |
+|   LeetCode pass rate                                          37/38  (97%) |
+|      ███████████████████░                                                  |
+|   Scheduler app (25 behavioural tests)                               26/26 |
+|      ████████████████████                                                  |
+|   Avg latency / problem                                           34318 ms |
+|   Avg tokens / problem                                                 436 |
+|                                                                            |
++────────────────────────────────────────────────────────────────────────────+
+|   LEETCODE — by problem                                                    |
+|                                                                            |
+|   [PASS] Easy   LC#1 Two Sum                                  4/4  33004ms |
+|   [PASS] Easy   LC#20 Valid Parentheses                       6/6  32932ms |
+|   [PASS] Easy   LC#21 Merge Two Sorted Lists                  4/4  35951ms |
+|   [PASS] Medium LC#3 Longest Substring Without Repeating      6/6  28187ms |
+|   [PASS] Medium LC#53 Maximum Subarray (Kadane's Algorit      4/4  20375ms |
+|   [PASS] Medium LC#200 Number of Islands                      2/2  43287ms |
+|   [PASS] Easy   LC#206 Reverse Linked List                    3/3  17986ms |
+|   [PASS] Hard   LC#42 Trapping Rain Water                     4/4  34169ms |
+|   [PASS] Hard   LC#76 Minimum Window Substring                4/4  60735ms |
+|   [FAIL] Hard   LC#295 Find Median from Data Stream           0/1  36557ms |
+|                                                                            |
++────────────────────────────────────────────────────────────────────────────+
+|   SCHEDULER APP — ReminderService generation                               |
+|                                                                            |
+|   Class generated                                                      yes |
+|   Class exported correctly                                             yes |
+|   Tests passed                                                       26/26 |
+|   Generation latency                                             127710 ms |
+|   Generation tokens                                                   1395 |
+|                                                                            |
++════════════════════════════════════════════════════════════════════════════+
+
+
+  NOTES
+  • Median (LC#295) uses a class-based driver the runner does not
+    fully exercise — a 0/1 there reflects a harness limit, not the model.
+  • Pass thresholds are exact test-case matches with float tolerance 1e-5.
+  • Generated code runs in a worker thread, killed at 5s (infinite-loop guard).

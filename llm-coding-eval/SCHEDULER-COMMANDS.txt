@@ -1,0 +1,65 @@
+============================================================================
+  RUNNING THE SCHEDULER TEST SUITE MANUALLY  (Windows Command Prompt / cmd.exe)
+============================================================================
+
+The scheduler suite (tests/scheduler.test.ts) asks the selected model to
+generate a full ReminderService TypeScript class, then runs 25 behavioural
+tests against it.
+
+Model is chosen with the MODEL env var (the ModelKey):
+    qwen7b    -> Qwen   (tag from QWEN_MODEL,    default 7B)
+    deepseek  -> DeepSeek(tag from DEEPSEEK_MODEL, default 6.7B)
+    glm       -> GLM cloud API (needs GLM_API_KEY)
+
+In cmd.exe, set env vars with `set VAR=value` (NO $ prefix, NO quotes needed).
+Each `set` persists for the rest of the cmd session.
+
+----------------------------------------------------------------------------
+ 0. One-time: open cmd and go to the project
+----------------------------------------------------------------------------
+    cd /d "C:\Users\dhira\Documents\Obsidian-Vaults\Claude-Vault\Trading\llm-coding-eval"
+
+----------------------------------------------------------------------------
+ 1. Qwen2.5-Coder 7B  (default tag)
+----------------------------------------------------------------------------
+    set MODEL=qwen7b
+    npx jest tests/scheduler.test.ts --verbose
+
+----------------------------------------------------------------------------
+ 2. DeepSeek-Coder 6.7B  (default tag)
+----------------------------------------------------------------------------
+    set MODEL=deepseek
+    npx jest tests/scheduler.test.ts --verbose
+
+----------------------------------------------------------------------------
+ 3. Qwen2.5-Coder 32B  (override the model tag)
+----------------------------------------------------------------------------
+    set MODEL=qwen7b
+    set QWEN_MODEL=qwen2.5-coder:32b-instruct-q4_K_M
+    npx jest tests/scheduler.test.ts --verbose
+
+----------------------------------------------------------------------------
+ 4. DeepSeek-Coder 33B  (override the model tag)
+----------------------------------------------------------------------------
+    set MODEL=deepseek
+    set DEEPSEEK_MODEL=deepseek-coder:33b-instruct-q4_K_M
+    npx jest tests/scheduler.test.ts --verbose
+
+----------------------------------------------------------------------------
+ NOTES
+----------------------------------------------------------------------------
+ * A `set QWEN_MODEL=...` / `set DEEPSEEK_MODEL=...` in cmd OVERRIDES the
+   value in .env (dotenv does not overwrite already-defined env vars).
+ * To clear an override and go back to the .env default:
+       set QWEN_MODEL=
+       set DEEPSEEK_MODEL=
+ * Ollama must be running first:
+       "%LOCALAPPDATA%\Programs\Ollama\ollama.exe" serve
+   (or just launch the Ollama app). Check models with:  ollama list
+ * 32B/33B models need ~20 GB; on a 16 GB GPU Ollama offloads to RAM, so
+   generation is much slower (tens of seconds). Be patient.
+ * Run the LeetCode suite the same way, swapping the test file:
+       npx jest tests/leetcode.test.ts --verbose
+ * Run BOTH local models + write results.json in one shot:
+       npx ts-node src/run-eval.ts
+============================================================================

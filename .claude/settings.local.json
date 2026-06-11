@@ -40,7 +40,15 @@
       "Bash(git -C \"C:\\\\Users\\\\dhira\\\\Documents\\\\Obsidian-Vaults\\\\Claude-Vault\\\\Trading\" status)",
       "Bash(git -C \"C:\\\\Users\\\\dhira\\\\Documents\\\\Obsidian-Vaults\\\\Claude-Vault\\\\Trading\" log --oneline -5)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(gh pr create --title 'feat: LLM coding eval harness — Qwen3/DeepSeek/GLM comparison' --body ' *)",
+      "PowerShell(Get-CimInstance Win32_VideoController | Select-Object Name, @{N='VRAM_GB';E={[math]::Round\\($_.AdapterRAM/1GB,1\\)}} | Format-Table -AutoSize; Get-CimInstance Win32_ComputerSystem | Select-Object @{N='RAM_GB';E={[math]::Round\\($_.TotalPhysicalMemory/1GB,1\\)}}; Get-PSDrive C | Select-Object @{N='FreeGB';E={[math]::Round\\($_.Free/1GB,1\\)}})",
+      "PowerShell(winget install Ollama.Ollama --accept-source-agreements --accept-package-agreements)",
+      "PowerShell($paths = @\\(\"$env:LOCALAPPDATA\\\\Programs\\\\Ollama\\\\ollama.exe\", \"$env:ProgramFiles\\\\Ollama\\\\ollama.exe\"\\); foreach \\($p in $paths\\) { if \\(Test-Path $p\\) { Write-Output \"FOUND: $p\" } }; try { \\(Invoke-RestMethod http://localhost:11434/api/tags -TimeoutSec 3\\).models | Select-Object name, size } catch { Write-Output \"API not running\" })",
+      "PowerShell(cd \"C:\\\\Users\\\\dhira\\\\Documents\\\\Obsidian-Vaults\\\\Claude-Vault\\\\Trading\\\\llm-coding-eval\"; $env:MODEL=\"qwen32b\"; npx jest tests/leetcode.test.ts 2>&1 | Select-Object -Last 30)",
+      "mcp__visualize__read_me",
+      "mcp__visualize__show_widget"
     ]
   }
 }

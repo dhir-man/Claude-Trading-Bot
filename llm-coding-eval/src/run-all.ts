@@ -10,7 +10,7 @@ import { PROBLEMS } from "./leetcode/problems";
 import { evaluateProblem, ProblemResult } from "./leetcode/runner";
 import { log } from "./utils/logger";
 
-const MODELS: ModelKey[] = ["qwen32b", "deepseek", "glm"];
+const MODELS: ModelKey[] = ["qwen7b", "deepseek", "glm"];
 
 async function main() {
   log.section("LLM Coding Eval — All Models");

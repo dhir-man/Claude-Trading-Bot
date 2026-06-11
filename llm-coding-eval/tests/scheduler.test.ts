@@ -5,7 +5,7 @@
  * We then run the same 25 behavioural tests against every model's output.
  *
  * Run:
- *   MODEL=qwen32b  npx jest tests/scheduler.test.ts
+ *   MODEL=qwen7b   npx jest tests/scheduler.test.ts
  *   MODEL=deepseek npx jest tests/scheduler.test.ts
  *   MODEL=glm      npx jest tests/scheduler.test.ts
  */
@@ -17,10 +17,12 @@ import { CompletionRequest } from "../src/clients/types";
 import { extractCode, evalCode } from "../src/utils/extract-code";
 import { log } from "../src/utils/logger";
 import { SCHEDULER_APP_PROMPT } from "../src/scheduler/prompt";
-import { ReminderService, Reminder, CreateReminderInput } from "../src/scheduler/types";
+import { ReminderService } from "../src/scheduler/types";
+// describe/test/beforeAll/beforeEach/afterAll/expect are Jest globals (see @types/jest).
+// Do NOT import them from "node:test" — that shadows Jest's runtime and breaks the suite.
 
 // ── Model selection ───────────────────────────────────────────────────────────
-const MODEL_KEY = (process.env.MODEL as ModelKey) ?? "qwen32b";
+const MODEL_KEY = (process.env.MODEL as ModelKey) ?? "qwen7b";
 const client = buildClient(MODEL_KEY);
 
 // ── Shared state ──────────────────────────────────────────────────────────────

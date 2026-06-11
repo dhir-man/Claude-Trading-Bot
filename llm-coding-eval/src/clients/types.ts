@@ -36,10 +36,15 @@ export interface ModelPricing {
 }
 
 export const MODEL_PRICING: Record<string, ModelPricing> = {
-  "qwen3-coder-32b": {
+  "qwen2.5-coder-7b": {
     inputPer1K: 0.0,
     outputPer1K: 0.0,
     notes: "Local via Ollama — hardware cost only. Apache 2.0 license.",
+  },
+  "deepseek-coder-6.7b": {
+    inputPer1K: 0.0,
+    outputPer1K: 0.0,
+    notes: "Local via Ollama — hardware cost only. MIT/DeepSeek license.",
   },
   "deepseek-coder-v3": {
     inputPer1K: 0.00014, // $0.14/M input (cache miss)

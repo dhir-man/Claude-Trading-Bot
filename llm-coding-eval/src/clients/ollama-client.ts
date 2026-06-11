@@ -14,7 +14,9 @@ export class OllamaClient implements ModelClient {
   constructor(modelId: string, baseUrl = "http://localhost:11434") {
     this.modelId = modelId;
     this.name = modelId.split(":")[0];
-    this.http = axios.create({ baseURL: baseUrl, timeout: 120_000 });
+    // Configurable — large models offloaded to CPU can exceed the default.
+    const timeout = parseInt(process.env.OLLAMA_TIMEOUT_MS ?? "120000", 10);
+    this.http = axios.create({ baseURL: baseUrl, timeout });
   }
 
   async isAvailable(): Promise<boolean> {
