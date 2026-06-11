@@ -2,7 +2,7 @@
  * LeetCode Evaluation Test Suite
  * Tests all 3 models against 10 LeetCode problems.
  * Run individual models with:
- *   MODEL=qwen32b   npx jest tests/leetcode.test.ts
+ *   MODEL=qwen7b    npx jest tests/leetcode.test.ts
  *   MODEL=deepseek  npx jest tests/leetcode.test.ts
  *   MODEL=glm       npx jest tests/leetcode.test.ts
  */
@@ -15,7 +15,7 @@ import { evaluateProblem, ProblemResult } from "../src/leetcode/runner";
 import { log } from "../src/utils/logger";
 
 // ── Model selection ───────────────────────────────────────────────────────────
-const MODEL_KEY = (process.env.MODEL as ModelKey) ?? "qwen32b";
+const MODEL_KEY = (process.env.MODEL as ModelKey) ?? "qwen7b";
 const client = buildClient(MODEL_KEY);
 
 // ── Results accumulator ───────────────────────────────────────────────────────

@@ -5,15 +5,15 @@
  * Route requests to the right backend model by setting the `model` field.
  *
  * Model routing:
- *   model: "qwen3-coder-32b"    → Ollama local
- *   model: "deepseek-coder-v3"  → DeepSeek API (or Ollama)
- *   model: "glm-4-flash"        → Zhipu AI API
+ *   model: "qwen2.5-coder-7b"     → Ollama local
+ *   model: "deepseek-coder-6.7b"  → Ollama local (or DeepSeek API)
+ *   model: "glm-4-flash"          → Zhipu AI API
  *
  * Usage:
  *   npx ts-node src/api-server.ts
  *   curl http://localhost:3456/v1/chat/completions \
  *     -H "Content-Type: application/json" \
- *     -d '{"model":"qwen3-coder-32b","messages":[{"role":"user","content":"Write a hello world in TypeScript"}]}'
+ *     -d '{"model":"qwen2.5-coder-7b","messages":[{"role":"user","content":"Write a hello world in TypeScript"}]}'
  */
 import express, { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
@@ -28,13 +28,12 @@ app.use(express.json({ limit: "4mb" }));
 
 // ── Model routing map ────────────────────────────────────────────────────────
 const MODEL_ROUTE: Record<string, ModelKey> = {
-  "qwen3-coder-32b": "qwen32b",
-  "qwen3-coder-14b": "qwen32b",  // route 14b to same Ollama, just tag differs
-  "deepseek-coder-v3": "deepseek",
+  "qwen2.5-coder-7b": "qwen7b",
+  "qwen2.5-coder": "qwen7b",
+  "deepseek-coder-6.7b": "deepseek",
   "deepseek-coder": "deepseek",
   "glm-4-flash": "glm",
   "glm-4-air": "glm",
-  "glm-5": "glm",
 };
 
 // ── Health check ─────────────────────────────────────────────────────────────

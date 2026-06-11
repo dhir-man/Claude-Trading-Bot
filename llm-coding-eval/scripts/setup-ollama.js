@@ -11,17 +11,17 @@ const https = require("https");
 const http = require("http");
 
 const MODELS = {
-  "qwen32b": {
-    tag: "qwen3-coder:32b-instruct-q4_K_M",
-    vram: "~22GB",
-    ramFallback: "~24GB RAM",
-    description: "Qwen3-Coder 32B — Best value (Apache 2.0)",
+  "qwen7b": {
+    tag: "qwen2.5-coder:7b-instruct-q4_K_M",
+    vram: "~5GB",
+    ramFallback: "~8GB RAM",
+    description: "Qwen2.5-Coder 7B — Best value (Apache 2.0)",
   },
   "deepseek": {
-    tag: "deepseek-coder-v3:latest",
-    vram: "~40GB (full), ~20GB (Q4)",
-    ramFallback: "Use DeepSeek API instead: https://platform.deepseek.com",
-    description: "DeepSeek-Coder V3 — Best raw coding quality (MIT)",
+    tag: "deepseek-coder:6.7b-instruct-q4_K_M",
+    vram: "~4.5GB",
+    ramFallback: "~8GB RAM",
+    description: "DeepSeek-Coder 6.7B — Strong local coding (MIT/DeepSeek)",
   },
 };
 
@@ -120,11 +120,15 @@ async function main() {
 
   console.log("\n── Quick Start ───────────────────────────────────────────────");
   console.log("  # Pull a model (run once):");
-  console.log("  ollama pull qwen3-coder:32b-instruct-q4_K_M");
+  console.log("  ollama pull qwen2.5-coder:7b-instruct-q4_K_M");
+  console.log("  ollama pull deepseek-coder:6.7b-instruct-q4_K_M");
   console.log("");
-  console.log("  # Run the test suite:");
-  console.log("  MODEL=qwen32b npx jest tests/leetcode.test.ts");
-  console.log("  MODEL=qwen32b npx jest tests/scheduler.test.ts");
+  console.log("  # Run the test suite (PowerShell):");
+  console.log("  $env:MODEL='qwen7b';  npx jest tests/leetcode.test.ts");
+  console.log("  $env:MODEL='deepseek'; npx jest tests/scheduler.test.ts");
+  console.log("");
+  console.log("  # Run the combined eval across both local models:");
+  console.log("  npx ts-node src/run-eval.ts");
   console.log("");
   console.log("  # Start the proxy API server:");
   console.log("  npx ts-node src/api-server.ts");
@@ -132,7 +136,7 @@ async function main() {
   console.log("  # Test the API:");
   console.log(`  curl http://localhost:3456/v1/chat/completions \\`);
   console.log(`    -H "Content-Type: application/json" \\`);
-  console.log(`    -d '{"model":"qwen3-coder-32b","messages":[{"role":"user","content":"Write twoSum in TypeScript"}]}'`);
+  console.log(`    -d '{"model":"qwen2.5-coder-7b","messages":[{"role":"user","content":"Write twoSum in TypeScript"}]}'`);
 }
 
 main().catch(console.error);

@@ -11,15 +11,15 @@ export * from "./ollama-client";
 export * from "./deepseek-client";
 export * from "./glm-client";
 
-export type ModelKey = "qwen32b" | "deepseek" | "glm";
+export type ModelKey = "qwen7b" | "deepseek" | "glm";
 
 export function buildClient(key: ModelKey): ModelClient {
   const ollamaUrl = process.env.OLLAMA_BASE_URL ?? "http://localhost:11434";
 
   switch (key) {
-    case "qwen32b":
+    case "qwen7b":
       return new OllamaClient(
-        process.env.QWEN32B_MODEL ?? "qwen3-coder:32b-instruct-q4_K_M",
+        process.env.QWEN_MODEL ?? "qwen2.5-coder:7b-instruct-q4_K_M",
         ollamaUrl
       );
 
@@ -27,7 +27,7 @@ export function buildClient(key: ModelKey): ModelClient {
       // Prefer local Ollama if no API key provided
       if (!process.env.DEEPSEEK_API_KEY || process.env.DEEPSEEK_API_KEY === "your_deepseek_api_key_here") {
         return new OllamaClient(
-          process.env.DEEPSEEK_MODEL ?? "deepseek-coder-v3:latest",
+          process.env.DEEPSEEK_MODEL ?? "deepseek-coder:6.7b-instruct-q4_K_M",
           ollamaUrl
         );
       }
@@ -53,7 +53,7 @@ export function buildClient(key: ModelKey): ModelClient {
 
 export function allClients(): Record<ModelKey, ModelClient> {
   const result: Partial<Record<ModelKey, ModelClient>> = {};
-  const keys: ModelKey[] = ["qwen32b", "deepseek", "glm"];
+  const keys: ModelKey[] = ["qwen7b", "deepseek", "glm"];
   for (const k of keys) {
     try {
       result[k] = buildClient(k);

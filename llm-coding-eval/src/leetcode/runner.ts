@@ -1,7 +1,66 @@
+import * as path from "path";
+import { Worker } from "worker_threads";
 import { ModelClient, CompletionRequest } from "../clients/types";
-import { extractCode, evalCode } from "../utils/extract-code";
+import { extractCode } from "../utils/extract-code";
 import { log } from "../utils/logger";
 import { LeetCodeProblem, TestCase } from "./problems";
+
+/** Hard ceiling for running generated code — guards against infinite loops. */
+const EXEC_TIMEOUT_MS = 5000;
+
+interface WorkerOutcome {
+  results?: TestResult[];
+  fatal?: string;
+  timedOut?: boolean;
+}
+
+/**
+ * Runs the generated code + test cases inside a worker thread, terminating it
+ * if it exceeds EXEC_TIMEOUT_MS (LLM solutions can contain infinite loops).
+ */
+function runInWorker(
+  code: string,
+  functionName: string,
+  testCases: TestCase[]
+): Promise<WorkerOutcome> {
+  return new Promise((resolve) => {
+    const workerPath = path.join(__dirname, "eval-worker.js");
+    let settled = false;
+
+    const worker = new Worker(workerPath, {
+      workerData: { code, functionName, testCases },
+    });
+
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      worker.terminate();
+      resolve({ timedOut: true });
+    }, EXEC_TIMEOUT_MS);
+
+    worker.on("message", (msg: WorkerOutcome) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      worker.terminate();
+      resolve(msg);
+    });
+
+    worker.on("error", (err) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve({ fatal: err.message });
+    });
+
+    worker.on("exit", () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve({ fatal: "Worker exited without result" });
+    });
+  });
+}
 
 export interface TestResult {
   passed: boolean;
@@ -31,40 +90,6 @@ const SYSTEM_PROMPT = `You are an expert TypeScript engineer. When asked to solv
 3. Use module.exports = { functionName } at the end.
 4. Do NOT include any explanation outside the code block.
 5. Ensure your solution handles all edge cases.`;
-
-function deepEqual(a: unknown, b: unknown): boolean {
-  if (a === b) return true;
-  if (Array.isArray(a) && Array.isArray(b)) {
-    if (a.length !== b.length) return false;
-    // Sort for order-independent comparison (e.g. twoSum)
-    const sa = [...(a as number[])].sort();
-    const sb = [...(b as number[])].sort();
-    return sa.every((v, i) => deepEqual(v, sb[i]));
-  }
-  if (typeof a === "number" && typeof b === "number") {
-    return Math.abs(a - b) < 1e-5; // float tolerance for median
-  }
-  return JSON.stringify(a) === JSON.stringify(b);
-}
-
-function runTestCase(
-  fn: (...args: unknown[]) => unknown,
-  tc: TestCase
-): TestResult {
-  try {
-    const actual = fn(...tc.input);
-    const passed = deepEqual(actual, tc.expected);
-    return { passed, input: tc.input, expected: tc.expected, actual };
-  } catch (e: unknown) {
-    return {
-      passed: false,
-      input: tc.input,
-      expected: tc.expected,
-      actual: undefined,
-      error: e instanceof Error ? e.message : String(e),
-    };
-  }
-}
 
 export async function evaluateProblem(
   client: ModelClient,
@@ -110,67 +135,54 @@ export async function evaluateProblem(
     };
   }
 
-  // Eval and run test cases
-  let exports: Record<string, unknown> = {};
-  try {
-    exports = evalCode(generatedCode);
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : String(e);
-    log.error(`    Code eval failed: ${msg}`);
-    return {
-      problem,
-      model: client.modelId,
-      passed: 0,
-      total: problem.testCases.length,
-      passRate: 0,
-      latencyMs,
-      tokens,
-      costUsd,
-      generatedCode,
-      testResults: [],
-      error: `Code eval error: ${msg}`,
-    };
-  }
+  // Transpile, evaluate, and run test cases inside a timeout-guarded worker.
+  const outcome = await runInWorker(
+    generatedCode,
+    problem.functionName,
+    problem.testCases
+  );
 
-  const fn = exports[problem.functionName] as ((...args: unknown[]) => unknown) | undefined;
-  if (typeof fn !== "function") {
-    // Try to find any exported function
-    const anyFn = Object.values(exports).find((v) => typeof v === "function") as
-      | ((...args: unknown[]) => unknown)
-      | undefined;
-    if (!anyFn) {
-      return {
-        problem,
-        model: client.modelId,
-        passed: 0,
-        total: problem.testCases.length,
-        passRate: 0,
-        latencyMs,
-        tokens,
-        costUsd,
-        generatedCode,
-        testResults: [],
-        error: `Function '${problem.functionName}' not exported`,
-      };
-    }
-    // Use whatever was exported
-    exports[problem.functionName] = anyFn;
-  }
-
-  const theFn = exports[problem.functionName] as (...args: unknown[]) => unknown;
-  const testResults = problem.testCases.map((tc) => runTestCase(theFn, tc));
-  const passed = testResults.filter((r) => r.passed).length;
-
-  return {
+  const base = {
     problem,
     model: client.modelId,
-    passed,
-    total: problem.testCases.length,
-    passRate: passed / problem.testCases.length,
     latencyMs,
     tokens,
     costUsd,
     generatedCode,
+  };
+
+  if (outcome.timedOut) {
+    log.warn(`    Execution timed out (>${EXEC_TIMEOUT_MS}ms) — likely infinite loop`);
+    return {
+      ...base,
+      passed: 0,
+      total: problem.testCases.length,
+      passRate: 0,
+      testResults: [],
+      error: `Execution timeout (>${EXEC_TIMEOUT_MS}ms) — likely infinite loop in generated code`,
+    };
+  }
+
+  if (outcome.fatal || !outcome.results) {
+    log.error(`    ${outcome.fatal ?? "No results from worker"}`);
+    return {
+      ...base,
+      passed: 0,
+      total: problem.testCases.length,
+      passRate: 0,
+      testResults: [],
+      error: outcome.fatal ?? "No results from worker",
+    };
+  }
+
+  const testResults = outcome.results;
+  const passed = testResults.filter((r) => r.passed).length;
+
+  return {
+    ...base,
+    passed,
+    total: problem.testCases.length,
+    passRate: passed / problem.testCases.length,
     testResults,
   };
 }
