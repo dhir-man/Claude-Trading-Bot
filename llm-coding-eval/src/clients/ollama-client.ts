@@ -19,6 +19,27 @@ export class OllamaClient implements ModelClient {
     this.http = axios.create({ baseURL: baseUrl, timeout });
   }
 
+  /**
+   * Merge caller options with resource-allocation knobs read from env.
+   * Lets a 32B/33B run push as many layers onto the GPU as fit and use
+   * every CPU core for the CPU-offloaded remainder, without code edits.
+   *   OLLAMA_NUM_GPU     – layers to offload to GPU (e.g. 999 = as many as fit)
+   *   OLLAMA_NUM_THREAD  – CPU threads for the offloaded layers
+   *   OLLAMA_NUM_CTX     – context window
+   */
+  private resourceOptions(base: Record<string, unknown>): Record<string, unknown> {
+    const opts: Record<string, unknown> = { ...base };
+    const num = (v: string | undefined) =>
+      v === undefined ? undefined : parseInt(v, 10);
+    const gpu = num(process.env.OLLAMA_NUM_GPU);
+    const thread = num(process.env.OLLAMA_NUM_THREAD);
+    const ctx = num(process.env.OLLAMA_NUM_CTX);
+    if (gpu !== undefined) opts.num_gpu = gpu;
+    if (thread !== undefined) opts.num_thread = thread;
+    if (ctx !== undefined) opts.num_ctx = ctx;
+    return opts;
+  }
+
   async isAvailable(): Promise<boolean> {
     try {
       const res = await this.http.get("/api/tags");
@@ -33,15 +54,21 @@ export class OllamaClient implements ModelClient {
     const start = Date.now();
 
     // Ollama /api/chat endpoint (OpenAI-compatible messages)
-    const response = await this.http.post("/api/chat", {
-      model: this.modelId,
-      messages: req.messages,
-      stream: false,
-      options: {
-        temperature: req.temperature ?? 0.1,
-        num_predict: req.maxTokens ?? 2048,
-      },
-    });
+    const response = await this.http.post(
+      "/api/chat",
+      {
+        model: this.modelId,
+        messages: req.messages,
+        stream: false,
+        // Keep the model resident between problems so we pay the (large)
+        // load cost once per model, not per request.
+        keep_alive: process.env.OLLAMA_KEEP_ALIVE ?? "30m",
+        options: this.resourceOptions({
+          temperature: req.temperature ?? 0.1,
+          num_predict: req.maxTokens ?? 2048,
+        }),
+      }
+    );
 
     const latencyMs = Date.now() - start;
     const data = response.data;

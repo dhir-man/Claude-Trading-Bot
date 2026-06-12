@@ -1,6 +1,6 @@
 
   LLM CODING EVAL — RESULTS
-  Generated: 2026-06-11T22:59:38.512Z
+  Generated: 2026-06-12T00:28:44.604Z
   Suite: 10 LeetCode problems (Easy→Hard) + 25-test Scheduler app
   Runtime: local via Ollama, TypeScript output, sandboxed execution
 
@@ -13,22 +13,22 @@
 |      ███████████████████░                                                  |
 |   Scheduler app (25 behavioural tests)                               26/26 |
 |      ████████████████████                                                  |
-|   Avg latency / problem                                           35048 ms |
-|   Avg tokens / problem                                                 413 |
+|   Avg latency / problem                                           76076 ms |
+|   Avg tokens / problem                                                 412 |
 |                                                                            |
 +────────────────────────────────────────────────────────────────────────────+
 |   LEETCODE — by problem                                                    |
 |                                                                            |
-|   [PASS] Easy   LC#1 Two Sum                                  4/4  27536ms |
-|   [PASS] Easy   LC#20 Valid Parentheses                       6/6  21363ms |
-|   [PASS] Easy   LC#21 Merge Two Sorted Lists                  4/4  23707ms |
-|   [PASS] Medium LC#3 Longest Substring Without Repeating      6/6  18983ms |
-|   [PASS] Medium LC#53 Maximum Subarray (Kadane's Algorit      4/4  17841ms |
-|   [PASS] Medium LC#200 Number of Islands                      2/2  34196ms |
-|   [PASS] Easy   LC#206 Reverse Linked List                     3/3  4480ms |
-|   [PASS] Hard   LC#42 Trapping Rain Water                     4/4  27062ms |
-|   [PASS] Hard   LC#76 Minimum Window Substring                4/4  50456ms |
-|   [FAIL] Hard   LC#295 Find Median from Data Stream          0/1  124854ms |
+|   [PASS] Easy   LC#1 Two Sum                                  4/4  37422ms |
+|   [PASS] Easy   LC#20 Valid Parentheses                       6/6  45282ms |
+|   [PASS] Easy   LC#21 Merge Two Sorted Lists                  4/4  51159ms |
+|   [PASS] Medium LC#3 Longest Substring Without Repeating      6/6  45271ms |
+|   [PASS] Medium LC#53 Maximum Subarray (Kadane's Algorit      4/4  40488ms |
+|   [PASS] Medium LC#200 Number of Islands                      2/2  72295ms |
+|   [PASS] Easy   LC#206 Reverse Linked List                     3/3  8746ms |
+|   [PASS] Hard   LC#42 Trapping Rain Water                     4/4  58383ms |
+|   [PASS] Hard   LC#76 Minimum Window Substring               4/4  101548ms |
+|   [FAIL] Hard   LC#295 Find Median from Data Stream          0/1  300163ms |
 |                                                                            |
 +────────────────────────────────────────────────────────────────────────────+
 |   SCHEDULER APP — ReminderService generation                               |
@@ -36,7 +36,7 @@
 |   Class generated                                                      yes |
 |   Class exported correctly                                             yes |
 |   Tests passed                                                       26/26 |
-|   Generation latency                                              84018 ms |
+|   Generation latency                                             246867 ms |
 |   Generation tokens                                                   1029 |
 |                                                                            |
 +════════════════════════════════════════════════════════════════════════════+
@@ -49,36 +49,45 @@
 |                                                                            |
 |   LeetCode pass rate                                          37/38  (97%) |
 |      ███████████████████░                                                  |
-|   Scheduler app (25 behavioural tests)                               26/26 |
-|      ████████████████████                                                  |
-|   Avg latency / problem                                           34318 ms |
-|   Avg tokens / problem                                                 436 |
+|   Scheduler app (25 behavioural tests)                               19/26 |
+|      ███████████████░░░░░                                                  |
+|   Avg latency / problem                                           94556 ms |
+|   Avg tokens / problem                                                 438 |
 |                                                                            |
 +────────────────────────────────────────────────────────────────────────────+
 |   LEETCODE — by problem                                                    |
 |                                                                            |
-|   [PASS] Easy   LC#1 Two Sum                                  4/4  33004ms |
-|   [PASS] Easy   LC#20 Valid Parentheses                       6/6  32932ms |
-|   [PASS] Easy   LC#21 Merge Two Sorted Lists                  4/4  35951ms |
-|   [PASS] Medium LC#3 Longest Substring Without Repeating      6/6  28187ms |
-|   [PASS] Medium LC#53 Maximum Subarray (Kadane's Algorit      4/4  20375ms |
-|   [PASS] Medium LC#200 Number of Islands                      2/2  43287ms |
-|   [PASS] Easy   LC#206 Reverse Linked List                    3/3  17986ms |
-|   [PASS] Hard   LC#42 Trapping Rain Water                     4/4  34169ms |
-|   [PASS] Hard   LC#76 Minimum Window Substring                4/4  60735ms |
-|   [FAIL] Hard   LC#295 Find Median from Data Stream           0/1  36557ms |
+|   [PASS] Easy   LC#1 Two Sum                                  4/4  77443ms |
+|   [PASS] Easy   LC#20 Valid Parentheses                       6/6  91760ms |
+|   [PASS] Easy   LC#21 Merge Two Sorted Lists                  4/4  98811ms |
+|   [PASS] Medium LC#3 Longest Substring Without Repeating      6/6  75592ms |
+|   [PASS] Medium LC#53 Maximum Subarray (Kadane's Algorit      4/4  56220ms |
+|   [PASS] Medium LC#200 Number of Islands                     2/2  117591ms |
+|   [PASS] Easy   LC#206 Reverse Linked List                    3/3  46677ms |
+|   [PASS] Hard   LC#42 Trapping Rain Water                     4/4  94963ms |
+|   [PASS] Hard   LC#76 Minimum Window Substring               4/4  184137ms |
+|   [FAIL] Hard   LC#295 Find Median from Data Stream          0/1  102363ms |
 |                                                                            |
 +────────────────────────────────────────────────────────────────────────────+
 |   SCHEDULER APP — ReminderService generation                               |
 |                                                                            |
 |   Class generated                                                      yes |
 |   Class exported correctly                                             yes |
-|   Tests passed                                                       26/26 |
-|   Generation latency                                             127710 ms |
-|   Generation tokens                                                   1395 |
+|   Tests passed                                                       19/26 |
+|   Generation latency                                             354065 ms |
+|   Generation tokens                                                   1363 |
 |                                                                            |
 +════════════════════════════════════════════════════════════════════════════+
 
+
+  MODEL ANSWER FILES
+  Every generated solution is saved as a .ts file under: answers-32b/<model>/
+  Retrieve one (open in your editor or print it):
+     type answers-32b\qwen7b\LC1-two-sum.ts
+  Re-run a saved answer against its test cases:
+     npx ts-node src/run-answer.ts answers-32b/qwen7b/LC1-two-sum.ts
+  Re-run a saved scheduler class through the 26-check harness:
+     npx ts-node src/run-answer.ts answers-32b/<model>/scheduler-ReminderService.ts
 
   NOTES
   • Median (LC#295) uses a class-based driver the runner does not

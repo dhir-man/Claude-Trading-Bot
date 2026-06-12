@@ -1,0 +1,140 @@
+{
+  "generatedAt": "2026-06-12T02:28:17.080Z",
+  "models": [
+    {
+      "key": "deepseek",
+      "label": "DeepSeek-Coder 6.7B",
+      "modelId": "deepseek-coder:6.7b-instruct-q4_K_M",
+      "leetcode": [
+        {
+          "id": 1,
+          "title": "Two Sum",
+          "difficulty": "Easy",
+          "slug": "two-sum",
+          "passed": 4,
+          "total": 4,
+          "latencyMs": 3300,
+          "tokens": 595,
+          "answerFile": "answers-consistency-tmp\\deepseek\\LC1-two-sum.ts"
+        },
+        {
+          "id": 20,
+          "title": "Valid Parentheses",
+          "difficulty": "Easy",
+          "slug": "valid-parentheses",
+          "passed": 6,
+          "total": 6,
+          "latencyMs": 4301,
+          "tokens": 599,
+          "answerFile": "answers-consistency-tmp\\deepseek\\LC20-valid-parentheses.ts"
+        },
+        {
+          "id": 21,
+          "title": "Merge Two Sorted Lists",
+          "difficulty": "Easy",
+          "slug": "merge-two-sorted-lists",
+          "passed": 4,
+          "total": 4,
+          "latencyMs": 3334,
+          "tokens": 538,
+          "answerFile": "answers-consistency-tmp\\deepseek\\LC21-merge-two-sorted-lists.ts"
+        },
+        {
+          "id": 3,
+          "title": "Longest Substring Without Repeating Characters",
+          "difficulty": "Medium",
+          "slug": "longest-substring-without-repeating-characters",
+          "passed": 6,
+          "total": 6,
+          "latencyMs": 3142,
+          "tokens": 474,
+          "answerFile": "answers-consistency-tmp\\deepseek\\LC3-longest-substring-without-repeating-characters.ts"
+        },
+        {
+          "id": 53,
+          "title": "Maximum Subarray (Kadane's Algorithm)",
+          "difficulty": "Medium",
+          "slug": "maximum-subarray",
+          "passed": 4,
+          "total": 4,
+          "latencyMs": 3941,
+          "tokens": 559,
+          "answerFile": "answers-consistency-tmp\\deepseek\\LC53-maximum-subarray.ts"
+        },
+        {
+          "id": 200,
+          "title": "Number of Islands",
+          "difficulty": "Medium",
+          "slug": "number-of-islands",
+          "passed": 2,
+          "total": 2,
+          "latencyMs": 5042,
+          "tokens": 648,
+          "answerFile": "answers-consistency-tmp\\deepseek\\LC200-number-of-islands.ts"
+        },
+        {
+          "id": 206,
+          "title": "Reverse Linked List",
+          "difficulty": "Easy",
+          "slug": "reverse-linked-list",
+          "passed": 3,
+          "total": 3,
+          "latencyMs": 2245,
+          "tokens": 356,
+          "answerFile": "answers-consistency-tmp\\deepseek\\LC206-reverse-linked-list.ts"
+        },
+        {
+          "id": 42,
+          "title": "Trapping Rain Water",
+          "difficulty": "Hard",
+          "slug": "trapping-rain-water",
+          "passed": 4,
+          "total": 4,
+          "latencyMs": 3748,
+          "tokens": 555,
+          "answerFile": "answers-consistency-tmp\\deepseek\\LC42-trapping-rain-water.ts"
+        },
+        {
+          "id": 76,
+          "title": "Minimum Window Substring",
+          "difficulty": "Hard",
+          "slug": "minimum-window-substring",
+          "passed": 0,
+          "total": 4,
+          "latencyMs": 7718,
+          "tokens": 866,
+          "error": "Function 'minWindow' not exported",
+          "answerFile": "answers-consistency-tmp\\deepseek\\LC76-minimum-window-substring.ts"
+        },
+        {
+          "id": 295,
+          "title": "Find Median from Data Stream",
+          "difficulty": "Hard",
+          "slug": "find-median-from-data-stream",
+          "passed": 0,
+          "total": 1,
+          "latencyMs": 6020,
+          "tokens": 748,
+          "answerFile": "answers-consistency-tmp\\deepseek\\LC295-find-median-from-data-stream.ts"
+        }
+      ],
+      "scheduler": {
+        "generated": true,
+        "classFound": true,
+        "passed": 26,
+        "total": 26,
+        "latencyMs": 9734,
+        "tokens": 1406,
+        "answerFile": "answers-consistency-tmp\\deepseek\\scheduler-ReminderService.ts"
+      },
+      "summary": {
+        "lcPassed": 33,
+        "lcTotal": 38,
+        "lcRate": 0.868421052631579,
+        "schedPassed": 26,
+        "schedTotal": 26,
+        "avgLatencyMs": 4279
+      }
+    }
+  ]
+}

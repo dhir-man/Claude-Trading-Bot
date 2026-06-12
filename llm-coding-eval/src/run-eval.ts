@@ -36,10 +36,23 @@ const ANSWERS_DIR =
 
 // Labels can be overridden via env (e.g. for the 32B run) so the same
 // runner produces correctly-labelled output without code edits.
-const MODELS: { key: ModelKey; label: string }[] = [
+const ALL_MODELS: { key: ModelKey; label: string }[] = [
   { key: "qwen7b", label: process.env.QWEN_LABEL ?? "Qwen2.5-Coder 7B" },
+  { key: "qwen14b", label: process.env.QWEN14B_LABEL ?? "Qwen2.5-Coder 14B" },
   { key: "deepseek", label: process.env.DEEPSEEK_LABEL ?? "DeepSeek-Coder 6.7B" },
+  { key: "codex", label: process.env.CODEX_LABEL ?? "OpenAI Codex (gpt-4o)" },
+  { key: "claude", label: process.env.CLAUDE_LABEL ?? "Claude Opus 4.8" },
 ];
+
+// ONLY_MODELS=qwen7b,deepseek restricts the run to those keys — used to run
+// each large model in its own process so only one is VRAM-resident at a time.
+const ONLY = (process.env.ONLY_MODELS ?? "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+const MODELS = ONLY.length
+  ? ALL_MODELS.filter((m) => ONLY.includes(m.key))
+  : ALL_MODELS;
 
 const OUT_FILE = process.env.OUT ?? "results.json";
 

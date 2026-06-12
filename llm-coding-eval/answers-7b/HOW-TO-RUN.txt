@@ -1,0 +1,35 @@
+HOW TO RUN — Local 7B-class answers
+===================================
+
+Solutions generated locally via Ollama by the small models:
+
+    answers-7b/qwen7b/    -> Qwen2.5-Coder 7B     (qwen2.5-coder:7b-instruct-q4_K_M)
+    answers-7b/deepseek/  -> DeepSeek-Coder 6.7B  (deepseek-coder:6.7b-instruct-q4_K_M)
+
+PREREQUISITE (one time)
+-----------------------
+    npm install
+    npm run build
+
+RE-RUN A SINGLE ANSWER
+----------------------
+    node dist/run-answer.js answers-7b/qwen7b/LC1-two-sum.ts
+    node dist/run-answer.js answers-7b/deepseek/scheduler-ReminderService.ts
+
+RE-RUN EVERY ANSWER FOR A MODEL (PowerShell)
+--------------------------------------------
+    Get-ChildItem answers-7b/qwen7b/*.ts | ForEach-Object { node dist/run-answer.js $_.FullName }
+    Get-ChildItem answers-7b/deepseek/*.ts | ForEach-Object { node dist/run-answer.js $_.FullName }
+
+REGENERATE FROM SCRATCH
+-----------------------
+PowerShell:
+    $env:ONLY_MODELS="qwen7b,deepseek"; $env:OUT="results-7b.json"; $env:ANSWERS_DIR="answers-7b"
+    node dist/run-eval.js
+(The 7B models fit fully in 16 GB VRAM, so no special offload flags are needed.)
+
+NOTES
+-----
+- LC#295 (MedianFinder) scores 0/1 for every model (class-driver harness limit).
+- The 7B tier is fast (~2-5 s/problem) but less reliable run-to-run than the
+  32B/33B tier (e.g. intermittent hallucinated imports / infinite loops).

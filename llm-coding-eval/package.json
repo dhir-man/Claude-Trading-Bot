@@ -4,7 +4,7 @@
   "description": "Evaluation harness for free-for-commercial-use LLMs: Qwen3-Coder-32B, DeepSeek-Coder-V3, GLM-5",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node -e \"require('fs').copyFileSync('src/leetcode/eval-worker.js','dist/leetcode/eval-worker.js')\"",
     "start": "node dist/index.js",
     "test": "jest --runInBand --forceExit",
     "test:qwen7b": "cross-env MODEL=qwen7b jest --runInBand --forceExit",
@@ -13,17 +13,21 @@
     "test:all": "node dist/run-all.js",
     "eval": "ts-node src/run-eval.ts",
     "server:start": "node dist/api-server.js",
+    "scheduler:try": "node dist/try-scheduler.js",
     "setup:ollama": "node scripts/setup-ollama.js",
+    "deck": "node scripts/build-deck.js",
     "dev": "ts-node src/index.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.104.1",
     "axios": "^1.7.2",
+    "chalk": "^4.1.2",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "node-cron": "^3.0.3",
-    "dotenv": "^16.4.5",
-    "chalk": "^4.1.2",
-    "table": "^6.8.1",
-    "ora": "^5.4.1"
+    "ora": "^5.4.1",
+    "pptxgenjs": "^4.0.1",
+    "table": "^6.8.1"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
@@ -38,7 +42,9 @@
     "preset": "ts-jest",
     "testEnvironment": "node",
     "testTimeout": 120000,
-    "testMatch": ["**/tests/**/*.test.ts"],
+    "testMatch": [
+      "**/tests/**/*.test.ts"
+    ],
     "globals": {
       "ts-jest": {
         "tsconfig": "tsconfig.json"

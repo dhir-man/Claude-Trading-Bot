@@ -1,0 +1,39 @@
+HOW TO RUN — Claude Opus answers
+=================================
+
+These are the solutions produced by Claude Opus 4.8 for the 10 LeetCode
+problems + the ReminderService scheduler app. Every file is self-contained
+TypeScript ending in `module.exports = { ... }`, so the eval harness can
+transpile, sandbox-execute, and score it.
+
+PREREQUISITE (one time)
+-----------------------
+From the llm-coding-eval/ directory:
+
+    npm install
+    npm run build      # compiles src -> dist and copies the sandbox worker
+
+RUN A SINGLE LEETCODE ANSWER (prints expected vs actual per test case)
+----------------------------------------------------------------------
+    node dist/run-answer.js answers-frontier/claude-opus/LC1-two-sum.ts
+    node dist/run-answer.js answers-frontier/claude-opus/LC42-trapping-rain-water.ts
+
+RUN THE SAVED SCHEDULER CLASS (26 behavioural checks)
+-----------------------------------------------------
+    node dist/run-answer.js answers-frontier/claude-opus/scheduler-ReminderService.ts
+
+RUN EVERY SAVED ANSWER IN THIS FOLDER (PowerShell)
+--------------------------------------------------
+    Get-ChildItem answers-frontier/claude-opus/*.ts | ForEach-Object {
+        node dist/run-answer.js $_.FullName
+    }
+
+NOTES
+-----
+- LC#295 (MedianFinder) is a class-based problem. The run-answer / runner
+  driver invokes the export as a plain function, so it scores 0/1 for EVERY
+  model — a harness limitation, not a model error. The class itself is correct
+  (two-heap O(log n) insert, O(1) median).
+- Array-output problems are compared with an order-insensitive deepEqual
+  (it sorts before comparing) and a 1e-5 float tolerance.
+- Generated code runs in a worker thread killed at 5s (infinite-loop guard).

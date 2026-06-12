@@ -1,0 +1,139 @@
+{
+  "generatedAt": "2026-06-12T02:24:27.737Z",
+  "models": [
+    {
+      "key": "qwen14b",
+      "label": "Qwen2.5-Coder 14B",
+      "modelId": "qwen2.5-coder:14b-instruct-q4_K_M",
+      "leetcode": [
+        {
+          "id": 1,
+          "title": "Two Sum",
+          "difficulty": "Easy",
+          "slug": "two-sum",
+          "passed": 4,
+          "total": 4,
+          "latencyMs": 8734,
+          "tokens": 377,
+          "answerFile": "answers-14b\\qwen14b\\LC1-two-sum.ts"
+        },
+        {
+          "id": 20,
+          "title": "Valid Parentheses",
+          "difficulty": "Easy",
+          "slug": "valid-parentheses",
+          "passed": 6,
+          "total": 6,
+          "latencyMs": 3290,
+          "tokens": 332,
+          "answerFile": "answers-14b\\qwen14b\\LC20-valid-parentheses.ts"
+        },
+        {
+          "id": 21,
+          "title": "Merge Two Sorted Lists",
+          "difficulty": "Easy",
+          "slug": "merge-two-sorted-lists",
+          "passed": 4,
+          "total": 4,
+          "latencyMs": 4174,
+          "tokens": 398,
+          "answerFile": "answers-14b\\qwen14b\\LC21-merge-two-sorted-lists.ts"
+        },
+        {
+          "id": 3,
+          "title": "Longest Substring Without Repeating Characters",
+          "difficulty": "Medium",
+          "slug": "longest-substring-without-repeating-characters",
+          "passed": 6,
+          "total": 6,
+          "latencyMs": 2956,
+          "tokens": 294,
+          "answerFile": "answers-14b\\qwen14b\\LC3-longest-substring-without-repeating-characters.ts"
+        },
+        {
+          "id": 53,
+          "title": "Maximum Subarray (Kadane's Algorithm)",
+          "difficulty": "Medium",
+          "slug": "maximum-subarray",
+          "passed": 4,
+          "total": 4,
+          "latencyMs": 2646,
+          "tokens": 290,
+          "answerFile": "answers-14b\\qwen14b\\LC53-maximum-subarray.ts"
+        },
+        {
+          "id": 200,
+          "title": "Number of Islands",
+          "difficulty": "Medium",
+          "slug": "number-of-islands",
+          "passed": 2,
+          "total": 2,
+          "latencyMs": 5716,
+          "tokens": 431,
+          "answerFile": "answers-14b\\qwen14b\\LC200-number-of-islands.ts"
+        },
+        {
+          "id": 206,
+          "title": "Reverse Linked List",
+          "difficulty": "Easy",
+          "slug": "reverse-linked-list",
+          "passed": 0,
+          "total": 3,
+          "latencyMs": 2100,
+          "tokens": 223,
+          "answerFile": "answers-14b\\qwen14b\\LC206-reverse-linked-list.ts"
+        },
+        {
+          "id": 42,
+          "title": "Trapping Rain Water",
+          "difficulty": "Hard",
+          "slug": "trapping-rain-water",
+          "passed": 4,
+          "total": 4,
+          "latencyMs": 3846,
+          "tokens": 359,
+          "answerFile": "answers-14b\\qwen14b\\LC42-trapping-rain-water.ts"
+        },
+        {
+          "id": 76,
+          "title": "Minimum Window Substring",
+          "difficulty": "Hard",
+          "slug": "minimum-window-substring",
+          "passed": 4,
+          "total": 4,
+          "latencyMs": 7441,
+          "tokens": 513,
+          "answerFile": "answers-14b\\qwen14b\\LC76-minimum-window-substring.ts"
+        },
+        {
+          "id": 295,
+          "title": "Find Median from Data Stream",
+          "difficulty": "Hard",
+          "slug": "find-median-from-data-stream",
+          "passed": 0,
+          "total": 1,
+          "latencyMs": 14799,
+          "tokens": 870,
+          "answerFile": "answers-14b\\qwen14b\\LC295-find-median-from-data-stream.ts"
+        }
+      ],
+      "scheduler": {
+        "generated": true,
+        "classFound": true,
+        "passed": 26,
+        "total": 26,
+        "latencyMs": 12383,
+        "tokens": 1057,
+        "answerFile": "answers-14b\\qwen14b\\scheduler-ReminderService.ts"
+      },
+      "summary": {
+        "lcPassed": 34,
+        "lcTotal": 38,
+        "lcRate": 0.8947368421052632,
+        "schedPassed": 26,
+        "schedTotal": 26,
+        "avgLatencyMs": 5570
+      }
+    }
+  ]
+}
