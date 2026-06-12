@@ -1,0 +1,209 @@
+================================================================================
+  HOW TO USE THE MODEL API SERVER  (src/api-server.ts)
+  One HTTP service that exposes every evaluated model — local + frontier.
+  (Markdown version with more detail: API.md)
+================================================================================
+
+--------------------------------------------------------------------------------
+1. ONE-TIME SETUP
+--------------------------------------------------------------------------------
+  cd llm-coding-eval
+  npm install
+  npm run build          # compiles src -> dist
+
+  Local models need Ollama running with the model pulled:
+      ollama pull qwen2.5-coder:7b-instruct-q4_K_M
+      ollama pull qwen2.5-coder:14b-instruct-q4_K_M
+      ollama pull qwen2.5-coder:32b-instruct-q4_K_M
+      ollama pull deepseek-coder:6.7b-instruct-q4_K_M
+      ollama pull deepseek-coder:33b-instruct-q4_K_M
+
+  Frontier models need keys in .env (gitignored — never commit it):
+      ANTHROPIC_API_KEY=sk-ant-...     # enables model id "claude-opus"
+      OPENAI_API_KEY=sk-...            # enables model id "codex"
+      # optional overrides:
+      CLAUDE_MODEL=claude-opus-4-8
+      OPENAI_MODEL=gpt-4o
+
+--------------------------------------------------------------------------------
+2. START THE SERVER
+--------------------------------------------------------------------------------
+  npm run server:start              # -> http://localhost:3456
+  # or:  npx ts-node src/api-server.ts
+  # custom port (PowerShell):  $env:PORT=8080; npm run server:start
+  # custom port (bash):        PORT=8080 npm run server:start
+
+  On startup it prints the routes and the model list. Leave it running in
+  its own terminal; open a second terminal to send requests.
+
+--------------------------------------------------------------------------------
+3. MODEL IDS
+--------------------------------------------------------------------------------
+  qwen2.5-coder-7b       local    (Ollama, ~5 GB,  fast)
+  qwen2.5-coder-14b      local    (Ollama, ~9 GB,  mid-size)
+  qwen2.5-coder-32b      local    (Ollama, ~19 GB, offloads on 16 GB GPU = slow)
+  deepseek-coder-6.7b    local    (Ollama, ~4.5 GB, fast)
+  deepseek-coder-33b     local    (Ollama, ~19 GB, offloads on 16 GB GPU = slow)
+  claude-opus            frontier (Anthropic API — needs ANTHROPIC_API_KEY)
+  codex                  frontier (OpenAI API     — needs OPENAI_API_KEY)
+
+  Discover them live:
+      curl http://localhost:3456/health
+      curl http://localhost:3456/v1/models
+
+--------------------------------------------------------------------------------
+4. ENDPOINTS
+--------------------------------------------------------------------------------
+  GET  /health                  liveness check + list of model ids
+  GET  /v1/models               model ids + tier (local / frontier)
+  POST /v1/chat/completions     OpenAI-compatible; pick model via "model" field
+  POST /models/:id/chat         per-model; model is in the URL
+
+--------------------------------------------------------------------------------
+5. CALL IT — curl
+--------------------------------------------------------------------------------
+  A) OpenAI-compatible endpoint (route by "model"):
+
+     curl http://localhost:3456/v1/chat/completions ^
+       -H "Content-Type: application/json" ^
+       -d "{\"model\":\"qwen2.5-coder-7b\",\"messages\":[{\"role\":\"user\",\"content\":\"Write twoSum in TypeScript\"}],\"max_tokens\":512}"
+
+     LINE-CONTINUATION & curl BY SHELL:
+       - cmd.exe        : ^ for line breaks (as written above), `curl` works.
+       - bash           : use \ for line breaks, `curl` works.
+       - PowerShell     : ` (backtick) for line breaks, and call `curl.exe`
+                          explicitly (bare `curl` is an alias for
+                          Invoke-WebRequest in Windows PowerShell 5.1 and will
+                          NOT accept these flags). Easiest in PowerShell: skip
+                          curl and use Invoke-RestMethod — see section 6b.
+       - Or just put the whole command on one line.
+
+  B) Per-model endpoint (model in the URL, simpler body):
+
+     curl http://localhost:3456/models/deepseek-coder-6.7b/chat ^
+       -H "Content-Type: application/json" ^
+       -d "{\"messages\":[{\"role\":\"user\",\"content\":\"Reverse a linked list in TypeScript\"}]}"
+
+--------------------------------------------------------------------------------
+6. CALL IT — Node.js / TypeScript
+--------------------------------------------------------------------------------
+  !! These are CODE snippets — they are NOT shell commands. Do NOT paste them
+     into a PowerShell or bash prompt (PowerShell will throw "Unexpected token
+     ':'"). Save them to a file and run with node instead:
+
+         # save as call.mjs  (the .mjs extension allows top-level await)
+         node call.mjs
+
+     If you want to call the server straight from PowerShell with no file, use
+     Invoke-RestMethod — see section 6b below.
+
+  Plain fetch (no SDK) — save as call.mjs, then `node call.mjs`:
+
+     const res = await fetch("http://localhost:3456/models/qwen2.5-coder-14b/chat", {
+       method: "POST",
+       headers: { "Content-Type": "application/json" },
+       body: JSON.stringify({
+         messages: [{ role: "user", content: "Write isValid(s) for balanced brackets in TS" }],
+         max_tokens: 512,
+       }),
+     });
+     const data = await res.json();
+     console.log(data.choices[0].message.content, `(${data.x_latency_ms} ms)`);
+
+  With the official OpenAI SDK (point baseURL at this server):
+
+     import OpenAI from "openai";
+     const client = new OpenAI({
+       baseURL: "http://localhost:3456/v1",
+       apiKey: "not-needed-for-local",   // any non-empty string
+     });
+     const r = await client.chat.completions.create({
+       model: "claude-opus",
+       messages: [{ role: "user", content: "Explain Kadane's algorithm in two sentences." }],
+       max_tokens: 256,
+     });
+     console.log(r.choices[0].message.content);
+
+--------------------------------------------------------------------------------
+6b. CALL IT — PowerShell (no Node, type straight into the prompt)
+--------------------------------------------------------------------------------
+  Use Invoke-RestMethod. Build the body as a hashtable and ConvertTo-Json so you
+  don't have to hand-escape quotes:
+
+     $body = @{
+       messages   = @(@{ role = "user"; content = "Write twoSum in TypeScript" })
+       max_tokens = 512
+     } | ConvertTo-Json
+
+     $r = Invoke-RestMethod -Uri "http://localhost:3456/models/qwen2.5-coder-7b/chat" `
+            -Method Post -ContentType "application/json" -Body $body
+     $r.choices[0].message.content
+     $r.x_latency_ms
+
+  OpenAI-compatible endpoint from PowerShell (pick model via the body):
+
+     $body = @{
+       model      = "deepseek-coder-6.7b"
+       messages   = @(@{ role = "user"; content = "Reverse a linked list in TS" })
+       max_tokens = 512
+     } | ConvertTo-Json
+     $r = Invoke-RestMethod -Uri "http://localhost:3456/v1/chat/completions" `
+            -Method Post -ContentType "application/json" -Body $body
+     $r.choices[0].message.content
+
+  Note: if a message "content" contains non-ASCII characters, add
+  `-Body ([System.Text.Encoding]::UTF8.GetBytes($body))` to send it as UTF-8.
+
+--------------------------------------------------------------------------------
+7. RESPONSE SHAPE (both endpoints)
+--------------------------------------------------------------------------------
+  {
+    "id": "chatcmpl-qwen2.5-coder-7b",
+    "object": "chat.completion",
+    "model": "qwen2.5-coder-7b",
+    "choices": [
+      { "index": 0, "message": { "role": "assistant", "content": "..." }, "finish_reason": "stop" }
+    ],
+    "usage": { "prompt_tokens": 42, "completion_tokens": 128, "total_tokens": 170 },
+    "x_latency_ms": 2310,     // extra (non-OpenAI) field
+    "x_cost_usd": 0           // extra field; 0 for local models
+  }
+
+--------------------------------------------------------------------------------
+8. NOTES & LIMITS
+--------------------------------------------------------------------------------
+  - ONE local model at a time. The 32B/33B models are ~19 GB and exceed a 16 GB
+    GPU, so they offload to system RAM and respond slowly. Don't drive two large
+    local models at once.
+  - Streaming is NOT supported — requests are request/response only.
+  - Claude maps the OpenAI "system" role to Anthropic's separate system param and
+    omits temperature (Opus 4.x rejects it) — handled automatically.
+  - Codex needs an OpenAI account with quota (a key with insufficient_quota -> 429).
+
+--------------------------------------------------------------------------------
+9. ERRORS
+--------------------------------------------------------------------------------
+  404  unknown model id            -> check GET /v1/models for valid ids
+  400  empty / missing "messages"  -> send a non-empty messages array
+  503  missing key for claude/codex-> add the key to .env and restart
+  429  (codex) insufficient_quota  -> add billing to the OpenAI account
+  500  backend/model error         -> message in the JSON body; check the
+                                       server terminal log
+
+--------------------------------------------------------------------------------
+10. QUICK SMOKE TEST
+--------------------------------------------------------------------------------
+  # terminal 1
+  npm run server:start
+
+  # terminal 2 — PowerShell:
+  Invoke-RestMethod http://localhost:3456/health
+  $b = @{ messages=@(@{role="user";content="say hi in one word"}); max_tokens=16 } | ConvertTo-Json
+  (Invoke-RestMethod http://localhost:3456/models/qwen2.5-coder-7b/chat -Method Post -ContentType "application/json" -Body $b).choices[0].message.content
+
+  # terminal 2 — cmd.exe:
+  curl http://localhost:3456/health
+  curl http://localhost:3456/models/qwen2.5-coder-7b/chat ^
+    -H "Content-Type: application/json" ^
+    -d "{\"messages\":[{\"role\":\"user\",\"content\":\"say hi in one word\"}],\"max_tokens\":16}"
+================================================================================

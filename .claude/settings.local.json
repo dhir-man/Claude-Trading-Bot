@@ -95,7 +95,10 @@
       "Bash(mkdir -p deck-assets)",
       "Bash(powershell -ExecutionPolicy Bypass -File scripts/text-to-png.ps1 card-qwen7b.txt deck-assets/card-qwen7b.png)",
       "Bash(powershell -ExecutionPolicy Bypass -File scripts/text-to-png.ps1 card-14b.txt deck-assets/card-14b.png)",
-      "Bash(node -e \"const {SCHEDULER_APP_PROMPT}=require\\('./dist/scheduler/prompt'\\); const l=SCHEDULER_APP_PROMPT.split\\('\\\\n'\\); console.log\\('lines:',l.length,'maxlen:',Math.max\\(...l.map\\(x=>x.length\\)\\)\\)\")"
+      "Bash(node -e \"const {SCHEDULER_APP_PROMPT}=require\\('./dist/scheduler/prompt'\\); const l=SCHEDULER_APP_PROMPT.split\\('\\\\n'\\); console.log\\('lines:',l.length,'maxlen:',Math.max\\(...l.map\\(x=>x.length\\)\\)\\)\")",
+      "Bash(git commit *)",
+      "Bash(gh pr create --base main --head llm-eval-local-benchmark --title 'Local coding-LLM eval: 7B→14B focus, model API, 15-slide deck' --body ' *)",
+      "Bash(git credential *)"
     ]
   }
 }
