@@ -1,0 +1,29 @@
+HOW TO RUN — Qwen2.5-Coder 14B answers (mid-size, fits 16 GB GPU)
+=================================================================
+
+Solutions generated locally via Ollama by the 14B model:
+    answers-14b/qwen14b/   -> qwen2.5-coder:14b-instruct-q4_K_M  (~9 GB)
+
+PREREQUISITE (one time)
+-----------------------
+    npm install
+    npm run build
+
+RE-RUN A SINGLE ANSWER
+----------------------
+    node dist/run-answer.js answers-14b/qwen14b/LC1-two-sum.ts
+    node dist/run-answer.js answers-14b/qwen14b/scheduler-ReminderService.ts
+
+MANUALLY POKE AT THE SCHEDULER CLASS (no test suite)
+----------------------------------------------------
+    node dist/try-scheduler.js answers-14b/qwen14b/scheduler-ReminderService.ts
+    node dist/try-scheduler.js answers-14b/qwen14b/scheduler-ReminderService.ts --repl
+
+REGENERATE FROM SCRATCH
+-----------------------
+PowerShell:
+    $env:ONLY_MODELS="qwen14b"; $env:OUT="results-14b.json"; $env:ANSWERS_DIR="answers-14b"
+    node dist/run-eval.js
+(14B is ~9 GB at Q4 — fits a 16 GB GPU fully, ~5.6 s/problem.)
+
+MEASURED (this machine): LeetCode 34/38 · Scheduler 26/26 · avg 5.6 s/problem.

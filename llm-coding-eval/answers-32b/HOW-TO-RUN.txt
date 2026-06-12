@@ -1,0 +1,55 @@
+HOW TO RUN — Local 32B / 33B answers
+====================================
+
+These are the solutions generated locally via Ollama by the two large models,
+saved per problem so any answer can be re-run and inspected:
+
+    answers-32b/qwen7b/    -> Qwen2.5-Coder 32B   (qwen2.5-coder:32b-instruct-q4_K_M)
+    answers-32b/deepseek/  -> DeepSeek-Coder 33B  (deepseek-coder:33b-instruct-q4_K_M)
+
+(The folder is named "answers-32b" for both; the 33B DeepSeek lives in the
+ deepseek/ subfolder. Folder key names mirror the harness model keys.)
+
+PREREQUISITE (one time)
+-----------------------
+    npm install
+    npm run build      # compiles src -> dist and copies the sandbox worker
+
+RE-RUN A SINGLE LEETCODE ANSWER
+-------------------------------
+    node dist/run-answer.js answers-32b/qwen7b/LC42-trapping-rain-water.ts
+    node dist/run-answer.js answers-32b/deepseek/LC76-minimum-window-substring.ts
+
+RE-RUN A SAVED SCHEDULER CLASS (26 behavioural checks)
+------------------------------------------------------
+    node dist/run-answer.js answers-32b/qwen7b/scheduler-ReminderService.ts
+    node dist/run-answer.js answers-32b/deepseek/scheduler-ReminderService.ts
+
+RE-RUN EVERY ANSWER FOR A MODEL (PowerShell)
+--------------------------------------------
+    Get-ChildItem answers-32b/qwen7b/*.ts | ForEach-Object { node dist/run-answer.js $_.FullName }
+    Get-ChildItem answers-32b/deepseek/*.ts | ForEach-Object { node dist/run-answer.js $_.FullName }
+
+REGENERATE FROM SCRATCH (re-query the models — one at a time, max resources)
+----------------------------------------------------------------------------
+PowerShell, Qwen 32B:
+    $env:OLLAMA_NUM_GPU=999; $env:OLLAMA_NUM_THREAD=16; $env:OLLAMA_NUM_CTX=4096
+    $env:OLLAMA_KEEP_ALIVE="30m"; $env:OLLAMA_TIMEOUT_MS=900000
+    $env:ONLY_MODELS="qwen7b"; $env:QWEN_MODEL="qwen2.5-coder:32b-instruct-q4_K_M"
+    $env:QWEN_LABEL="Qwen2.5-Coder 32B"; $env:OUT="results-qwen32b.json"; $env:ANSWERS_DIR="answers-32b"
+    node dist/run-eval.js
+
+Then unload before the next model so only one is VRAM-resident:
+    ollama stop qwen2.5-coder:32b-instruct-q4_K_M
+
+DeepSeek 33B (repeat with deepseek vars):
+    $env:ONLY_MODELS="deepseek"; $env:DEEPSEEK_MODEL="deepseek-coder:33b-instruct-q4_K_M"
+    $env:DEEPSEEK_LABEL="DeepSeek-Coder 33B"; $env:OUT="results-deep33b.json"
+    node dist/run-eval.js
+
+NOTES
+-----
+- LC#295 (MedianFinder) scores 0/1 for every model: the driver invokes the
+  class export as a plain function (harness limitation), not a model error.
+- On a 16 GB GPU these 19 GB models spill into shared memory; latency is
+  dominated by that offload. A 24 GB+ GPU runs them fully on-device.

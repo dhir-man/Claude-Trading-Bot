@@ -1,0 +1,38 @@
+HOW TO RUN — OpenAI Codex answers  (PENDING: account quota)
+===========================================================
+
+STATUS
+------
+The OpenAI client is fully wired (model key "codex"). A run was attempted but
+the supplied OPENAI_API_KEY returned HTTP 429 `insufficient_quota` on every
+request — the key authenticates, but the OpenAI account has no billing/credits
+attached, so no tokens could be generated. No Codex answers are saved yet.
+
+TO PRODUCE THE ANSWERS (once the account has quota)
+---------------------------------------------------
+1. Add billing/credits at https://platform.openai.com/account/billing
+   (or put a key that already has quota into .env as OPENAI_API_KEY).
+
+2. (Optional) Pick the model your key can access:
+       OPENAI_MODEL=gpt-4o          # default
+       OPENAI_MODEL=gpt-4.1
+       OPENAI_MODEL=gpt-5-codex     # if available to your account
+
+3. Run the eval (single command):
+   PowerShell:
+       $env:ONLY_MODELS="codex"; $env:CODEX_LABEL="OpenAI GPT-4o (Codex)"
+       $env:OUT="results-codex.json"; $env:ANSWERS_DIR="answers-frontier"
+       node dist/run-eval.js
+
+   This saves every generated solution under answers-frontier/codex/ and
+   writes results-codex.json.
+
+RE-RUN A SAVED ANSWER (after they exist)
+----------------------------------------
+       node dist/run-answer.js answers-frontier/codex/LC1-two-sum.ts
+       node dist/run-answer.js answers-frontier/codex/scheduler-ReminderService.ts
+
+NOTE
+----
+Codex is a remote API model — it uses no local GPU/RAM, so it can run at the
+same time as (or independently of) the local Ollama models.
