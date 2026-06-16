@@ -1,10 +1,8 @@
-.env
 node_modules/
-*.tsbuildinfo
-__pycache__/
-*.pyc
-venv/
-.venv/
-*.egg-info/
 dist/
-build/
+.env
+*.js.map
+outputs/**/*.json
+outputs/**/*.txt
+outputs/**/*.ts
+!outputs/README.md

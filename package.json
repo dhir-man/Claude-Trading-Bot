@@ -1,0 +1,62 @@
+{
+  "name": "llm-coding-eval",
+  "version": "1.0.0",
+  "description": "LLM coding evaluation harness: LeetCode + Scheduler tests across multiple drivers (Ollama, Claude, LiteLLM, LangChain)",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc && node -e \"require('fs').copyFileSync('src/leetcode/eval-worker.js','dist/leetcode/eval-worker.js')\"",
+    "start": "node dist/index.js",
+    "test": "jest --runInBand --forceExit",
+    "test:qwen7b": "cross-env MODEL=qwen7b jest --runInBand --forceExit",
+    "test:deepseek": "cross-env MODEL=deepseek jest --runInBand --forceExit",
+    "test:glm": "cross-env MODEL=glm jest --runInBand --forceExit",
+    "test:claude": "cross-env MODEL=claude jest --runInBand --forceExit",
+    "test:litellm": "cross-env MODEL=litellm jest --runInBand --forceExit",
+    "test:langchain": "cross-env MODEL=langchain jest --runInBand --forceExit",
+    "test:leetcode": "jest tests/leetcode.test.ts --runInBand --forceExit",
+    "test:scheduler": "jest tests/scheduler.test.ts --runInBand --forceExit",
+    "test:scheduler-plain": "jest tests/scheduler-plain-english.test.ts --runInBand --forceExit",
+    "test:all": "node dist/run-all.js",
+    "eval": "ts-node src/run-eval.ts",
+    "setup:ollama": "node scripts/setup-ollama.js",
+    "deck": "node scripts/build-deck.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.104.1",
+    "@langchain/anthropic": "^0.3.14",
+    "@langchain/core": "^0.3.44",
+    "@langchain/openai": "^0.5.6",
+    "axios": "^1.7.2",
+    "chalk": "^4.1.2",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "node-cron": "^3.0.3",
+    "ora": "^5.4.1",
+    "pptxgenjs": "^4.0.1",
+    "table": "^6.8.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.14.2",
+    "@types/node-cron": "^3.0.11",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.4",
+    "typescript": "^5.4.5"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testTimeout": 120000,
+    "testMatch": [
+      "**/tests/**/*.test.ts"
+    ],
+    "globals": {
+      "ts-jest": {
+        "tsconfig": "tsconfig.json"
+      }
+    }
+  }
+}
