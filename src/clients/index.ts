@@ -22,7 +22,9 @@ export * from "./langchain-client";
 export type ModelKey =
   | "qwen7b"
   | "qwen14b"
+  | "qwen32b"
   | "deepseek"
+  | "deepseek33b"
   | "glm"
   | "codex"
   | "claude"
@@ -42,6 +44,18 @@ export function buildClient(key: ModelKey): ModelClient {
     case "qwen14b":
       return new OllamaClient(
         process.env.QWEN14B_MODEL ?? "qwen2.5-coder:14b-instruct-q4_K_M",
+        ollamaUrl
+      );
+
+    case "qwen32b":
+      return new OllamaClient(
+        process.env.QWEN32B_MODEL ?? "qwen2.5-coder:32b",
+        ollamaUrl
+      );
+
+    case "deepseek33b":
+      return new OllamaClient(
+        process.env.DEEPSEEK33B_MODEL ?? "deepseek-coder:33b",
         ollamaUrl
       );
 
@@ -98,5 +112,8 @@ export function buildClient(key: ModelKey): ModelClient {
       const backend = (process.env.LANGCHAIN_DRIVER as "anthropic" | "openai") ?? "anthropic";
       return new LangChainClient(backend, process.env.LANGCHAIN_MODEL);
     }
+
+    default:
+      throw new Error(`Unknown model key: "${key as string}" — check MODEL env var and buildClient switch`);
   }
 }

@@ -196,23 +196,24 @@ Export it as: module.exports = { minWindow }`,
     ],
   },
   {
-    id: 295,
-    slug: "find-median-from-data-stream",
-    title: "Find Median from Data Stream",
+    id: 4,
+    slug: "median-of-two-sorted-arrays",
+    title: "Median of Two Sorted Arrays",
     difficulty: "Hard",
-    category: "Heap / Design",
-    functionName: "MedianFinder",
-    signature: "class MedianFinder { addNum(n: number): void; findMedian(): number }",
-    prompt: `Implement the MedianFinder class with addNum(num: number): void and findMedian(): number.
+    category: "Binary Search / Divide & Conquer",
+    functionName: "findMedianSortedArrays",
+    signature: "function findMedianSortedArrays(nums1: number[], nums2: number[]): number",
+    prompt: `Given two sorted arrays \`nums1\` and \`nums2\` of size m and n respectively, return the median of the two sorted arrays. The overall run time complexity should be O(log(m+n)).
 
-Write a TypeScript class: MedianFinder
-Export it as: module.exports = { MedianFinder }`,
+Write a TypeScript function: function findMedianSortedArrays(nums1: number[], nums2: number[]): number
+Export it as: module.exports = { findMedianSortedArrays }`,
     testCases: [
-      {
-        input: [[[1], [2], [3]]],
-        expected: [null, null, 2.0],
-        description: "add 1, add 2, add 3, findMedian=2",
-      },
+      { input: [[1, 3], [2]],        expected: 2.0,  description: "odd total → 2.0" },
+      { input: [[1, 2], [3, 4]],     expected: 2.5,  description: "even total → 2.5" },
+      { input: [[0, 0], [0, 0]],     expected: 0.0,  description: "all zeros" },
+      { input: [[], [1]],            expected: 1.0,  description: "one empty" },
+      { input: [[2], []],            expected: 2.0,  description: "other empty" },
+      { input: [[1, 3], [2, 4]],     expected: 2.5,  description: "interleaved even" },
     ],
   },
 ];
