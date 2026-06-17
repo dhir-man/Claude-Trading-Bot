@@ -59,13 +59,14 @@
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
+    "rootDir": ".",
     "testTimeout": 120000,
     "testMatch": [
-      "**/tests/**/*.test.ts"
+      "<rootDir>/tests/**/*.test.ts"
     ],
     "globals": {
       "ts-jest": {
-        "tsconfig": "tsconfig.json"
+        "tsconfig": "<rootDir>/tsconfig.json"
       }
     }
   }

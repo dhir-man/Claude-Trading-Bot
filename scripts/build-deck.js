@@ -1,6 +1,11 @@
 /**
  * Builds a 10-slide PowerPoint report on the LLM Coding Eval findings.
  * node scripts/build-deck.js
+ *
+ * Results as of June 2026:
+ *  Claude Sonnet 4.6   — LeetCode 37/38, Sched 25/25, PE 12/12
+ *  Qwen2.5-Coder 32B   — LeetCode 37/38, Sched 25/25, PE  6/12 (positional-arg API design)
+ *  DeepSeek-Coder 33B  — LeetCode TBD,   Sched TBD,   PE TBD
  */
 const PptxGenJS = require("pptxgenjs");
 const fs = require("fs");
@@ -30,11 +35,11 @@ function titleSlide(p) {
     x: 1, y: 1.2, w: 11, h: 1.2,
     fontSize: 48, bold: true, color: BRAND.text, align: "center",
   });
-  p.addText("Benchmarking Claude · Ollama · LiteLLM · LangChain\nacross LeetCode and Scheduler App generation", {
+  p.addText("Benchmarking Claude · Qwen 32B · DeepSeek 33B · LiteLLM · LangChain\nacross LeetCode and Scheduler App generation", {
     x: 1, y: 2.6, w: 11, h: 1,
     fontSize: 18, color: BRAND.muted, align: "center",
   });
-  p.addText("June 2025", {
+  p.addText("June 2026", {
     x: 1, y: 4.8, w: 11, h: 0.4,
     fontSize: 14, color: BRAND.accent, align: "center",
   });
@@ -65,12 +70,12 @@ titleSlide(s1);
 const s2 = pptx.addSlide();
 headerSlide(s2, "02", "Executive Summary", "What we tested, how, and what we found");
 const bullets = [
-  ["Scope", "10 LeetCode problems (Easy → Hard) + 2 Scheduler variants across 4+ drivers"],
-  ["Models", "Claude Sonnet 4.6, Qwen2.5-Coder 7B/14B, DeepSeek-Coder, GLM-4, LiteLLM proxy, LangChain"],
-  ["Top finding", "Claude passed 100% of Easy/Medium LeetCode cases; local 7B models averaged 72%"],
-  ["Scheduler", "All models handled the structured prompt well; plain-English prompt revealed API design skill gaps"],
-  ["Drivers", "LiteLLM and LangChain add negligible overhead (~50ms) over native clients"],
-  ["Cost", "Claude Sonnet: ~$0.004 for full LeetCode run. Local Ollama: $0 (hardware only)"],
+  ["Scope",        "10 LeetCode problems (Easy→Hard) + 2 Scheduler variants across 4+ drivers"],
+  ["Models",       "Claude Sonnet 4.6, Qwen2.5-Coder 32B, DeepSeek-Coder 33B, LiteLLM proxy, LangChain"],
+  ["LeetCode",     "Claude 37/38 (97%) · Qwen 32B 37/38 (97%) · DeepSeek 33B 34/38 (89%)"],
+  ["Scheduler",    "Claude + Qwen 32B: 25/25 structured · DeepSeek 33B: 0/25 (ESM import breaks eval)"],
+  ["Key insight",  "Qwen 32B matches Claude on LeetCode; DeepSeek 33B needs stricter no-library prompting"],
+  ["Cost",         "Claude: ~$0.004/run  ·  Qwen 32B / DeepSeek 33B: $0 (local Ollama, hardware only)"],
 ];
 bullets.forEach(([label, text], i) => {
   const y = 1.55 + i * 0.62;
@@ -81,15 +86,14 @@ bullets.forEach(([label, text], i) => {
 
 // ── Slide 3: Models Tested ─────────────────────────────────────────────────
 const s3 = pptx.addSlide();
-headerSlide(s3, "03", "Models & Drivers Tested", "Four driver types, seven model configurations");
+headerSlide(s3, "03", "Models & Drivers Tested", "Two large local models added — 32B and 33B parameter scale");
 const models = [
-  ["Claude Sonnet 4.6",        "Anthropic SDK",     "$3/M in · $15/M out",  BRAND.accent],
-  ["Qwen2.5-Coder 7B",         "Ollama (local)",    "$0 — hardware only",   BRAND.accentAlt],
-  ["Qwen2.5-Coder 14B",        "Ollama (local)",    "$0 — hardware only",   BRAND.accentAlt],
-  ["DeepSeek-Coder 6.7B",      "Ollama / API",      "$0 local / $0.14/M",   BRAND.warn],
-  ["GLM-4-Flash",              "Zhipu AI API",      "6M tokens/month free", BRAND.warn],
-  ["LiteLLM proxy",            "OpenAI-compat HTTP","proxies any backend",  BRAND.pass],
-  ["LangChain (Anthropic)",    "LangChain SDK",     "wraps Claude via LC",  BRAND.pass],
+  ["Claude Sonnet 4.6",        "Anthropic SDK",     "$3/M in · $15/M out",       BRAND.accent],
+  ["Qwen2.5-Coder 32B",        "Ollama (local)",    "$0 — hardware only",         BRAND.accentAlt],
+  ["DeepSeek-Coder 33B",       "Ollama (local)",    "$0 — hardware only",         BRAND.accentAlt],
+  ["Qwen2.5-Coder 7B/14B",     "Ollama (local)",    "$0 — earlier benchmarks",    BRAND.warn],
+  ["LiteLLM proxy",            "OpenAI-compat HTTP","proxies any backend",         BRAND.pass],
+  ["LangChain (Anthropic)",    "LangChain SDK",     "wraps Claude via LC",         BRAND.pass],
 ];
 models.forEach(([name, driver, cost, color], i) => {
   const col = i % 2;
@@ -104,143 +108,164 @@ models.forEach(([name, driver, cost, color], i) => {
 
 // ── Slide 4: LeetCode Results ─────────────────────────────────────────────
 const s4 = pptx.addSlide();
-headerSlide(s4, "04", "LeetCode Benchmark Results", "10 problems · Easy / Medium / Hard");
+headerSlide(s4, "04", "LeetCode Benchmark Results", "10 problems · Easy / Medium / Hard · 5 columns");
 const lcData = [
-  ["Problem",                              "Difficulty", "Claude", "Qwen7B", "DeepSeek"],
-  ["Two Sum",                              "Easy",       "4/4",    "4/4",    "4/4"],
-  ["Valid Parentheses",                    "Easy",       "6/6",    "5/6",    "5/6"],
-  ["Merge Two Sorted Lists",              "Easy",       "4/4",    "4/4",    "4/4"],
-  ["Reverse Linked List",                 "Easy",       "3/3",    "3/3",    "3/3"],
-  ["Longest Substring (No Repeating)",    "Medium",     "6/6",    "5/6",    "4/6"],
-  ["Maximum Subarray (Kadane)",           "Medium",     "4/4",    "4/4",    "3/4"],
-  ["Number of Islands",                   "Medium",     "2/2",    "1/2",    "1/2"],
-  ["Trapping Rain Water",                 "Hard",       "4/4",    "2/4",    "2/4"],
-  ["Minimum Window Substring",            "Hard",       "4/4",    "2/4",    "1/4"],
-  ["Find Median from Data Stream",        "Hard",       "1/1",    "0/1",    "0/1"],
+  ["Problem",                              "Diff",    "Claude", "Qwen32B", "DS33B"],
+  ["Two Sum",                              "Easy",    "4/4",    "4/4",     "4/4"],
+  ["Valid Parentheses",                    "Easy",    "6/6",    "6/6",     "6/6"],
+  ["Merge Two Sorted Lists",               "Easy",    "4/4",    "4/4",     "4/4"],
+  ["Reverse Linked List",                  "Easy",    "3/3",    "3/3",     "3/3"],
+  ["Longest Substring (No Repeat)",        "Medium",  "6/6",    "6/6",     "6/6"],
+  ["Maximum Subarray (Kadane)",            "Medium",  "4/4",    "4/4",     "4/4"],
+  ["Number of Islands",                    "Medium",  "2/2",    "2/2",     "2/2"],
+  ["Trapping Rain Water",                  "Hard",    "4/4",    "4/4",     "1/4"],
+  ["Minimum Window Substring",             "Hard",    "4/4",    "4/4",     "4/4"],
+  ["Find Median from Data Stream",         "Hard",    "1/1",    "0/1",     "0/1"],
 ];
-const colW = [4.2, 1.3, 1.4, 1.4, 1.4];
-const colX = [0.35, 4.6, 5.95, 7.4, 8.85];
+
+function cellColor(cell) {
+  if (cell.startsWith("4/4") || cell.startsWith("6/6") || cell.startsWith("3/3") || cell.startsWith("2/2") || cell.startsWith("1/1")) return BRAND.pass;
+  if (cell.startsWith("0/")) return BRAND.fail;
+  if (cell.startsWith("?")) return BRAND.muted;
+  return BRAND.warn;
+}
+
+const colW = [3.9, 1.1, 1.3, 1.4, 1.4];
+const colX = [0.35, 4.3, 5.45, 6.8, 8.25];
 lcData.forEach((row, ri) => {
-  const y = 1.4 + ri * 0.39;
+  const y = 1.38 + ri * 0.39;
   const isHeader = ri === 0;
-  row.forEach((cell, ci) => {
-    const color = isHeader ? BRAND.accent : (cell.startsWith("4/4") || cell.startsWith("6/6") || cell.startsWith("3/3") || cell.startsWith("2/2") || cell.startsWith("1/1") ? BRAND.pass : cell.startsWith("0/") ? BRAND.fail : BRAND.warn);
-    s4.addText(cell, { x: colX[ci], y, w: colW[ci], h: 0.36, fontSize: isHeader ? 11 : 10, bold: isHeader, color: isHeader ? BRAND.accent : color });
-  });
-  if (!isHeader && ri % 2 === 1) {
-    s4.addShape(pptx.ShapeType.rect, { x: 0.35, y, w: 12.4, h: 0.36, fill: { color: "0D0D18" } });
-    row.forEach((cell, ci) => {
-      const color = (cell.startsWith("4/4") || cell.startsWith("6/6") || cell.startsWith("3/3") || cell.startsWith("2/2") || cell.startsWith("1/1") ? BRAND.pass : cell.startsWith("0/") ? BRAND.fail : BRAND.warn);
-      s4.addText(cell, { x: colX[ci], y, w: colW[ci], h: 0.36, fontSize: 10, color: ri === 0 ? BRAND.accent : color });
-    });
+  if (!isHeader && ri % 2 === 0) {
+    s4.addShape(pptx.ShapeType.rect, { x: 0.35, y, w: 9.5, h: 0.36, fill: { color: "0D0D18" } });
   }
+  row.forEach((cell, ci) => {
+    s4.addText(cell, {
+      x: colX[ci], y, w: colW[ci], h: 0.36,
+      fontSize: isHeader ? 11 : 10, bold: isHeader,
+      color: isHeader ? BRAND.accent : (ci < 2 ? BRAND.text : cellColor(cell)),
+    });
+  });
+});
+s4.addText("DS33B = DeepSeek-Coder 33B  ·  Trapping Rain Water: algo off-by-one  ·  MedianFinder: known eval limitation", {
+  x: 0.35, y: 5.5, w: 12, h: 0.3, fontSize: 10, color: BRAND.muted, italic: true,
 });
 
 // ── Slide 5: Scheduler Structured Results ──────────────────────────────────
 const s5 = pptx.addSlide();
 headerSlide(s5, "05", "Scheduler App — Structured Prompt", "TypeScript interface given · 25 behavioural tests");
-card(s5, 0.5,  1.4, 2.9, 1.2, "Claude Sonnet 4.6",    "25/25", "100% pass rate",        BRAND.pass);
-card(s5, 3.6,  1.4, 2.9, 1.2, "Qwen2.5-Coder 7B",     "22/25", "88% — 3 edge cases",   BRAND.warn);
-card(s5, 6.7,  1.4, 2.9, 1.2, "DeepSeek-Coder 6.7B",  "21/25", "84% — listOverdue",    BRAND.warn);
-card(s5, 9.8,  1.4, 2.9, 1.2, "LangChain/Claude",      "25/25", "same as native SDK",    BRAND.pass);
+card(s5, 0.4,  1.4, 2.6, 1.2, "Claude Sonnet 4.6",    "25/25", "100% — no issues",                    BRAND.pass);
+card(s5, 3.2,  1.4, 2.6, 1.2, "Qwen 2.5-Coder 32B",   "25/25", "100% — matched Claude",               BRAND.pass);
+card(s5, 6.0,  1.4, 2.6, 1.2, "DeepSeek-Coder 33B",   "0/25",  "imported ESM pkg — eval sandbox fail", BRAND.fail);
+card(s5, 8.8,  1.4, 2.6, 1.2, "LangChain / Claude",   "25/25", "same as native SDK",                  BRAND.pass);
 const issues = [
-  "• Qwen7B: forgot to exclude completed items from listOverdue()",
-  "• DeepSeek: repeat field defaulted to undefined instead of 'once'",
-  "• Both local models: getDueWithin() off-by-one on boundary (>= vs >)",
-  "• LangChain overhead: ~45ms extra vs native Anthropic SDK (negligible)",
+  "• Qwen 32B structured: Perfect 25/25 — correctly implements all edge cases including repeat field and getDueWithin boundary",
+  "• Claude structured: Perfect 25/25 — fastest generation (~1.4s) vs Qwen 32B (~200s on CPU)",
+  "• DeepSeek 33B: Imported @datastructures-js/priority-queue (ESM) — fails in CommonJS eval sandbox. Code logic may be correct.",
+  "• Key lesson: DeepSeek 33B uses external libraries even when told not to — stricter prompt engineering needed",
 ];
 issues.forEach((txt, i) => {
-  s5.addText(txt, { x: 0.5, y: 2.9 + i * 0.52, w: 12, h: 0.42, fontSize: 13, color: BRAND.text });
+  s5.addText(txt, { x: 0.5, y: 2.9 + i * 0.52, w: 12, h: 0.42, fontSize: 12, color: BRAND.text });
 });
 
 // ── Slide 6: Scheduler Plain English Results ───────────────────────────────
 const s6 = pptx.addSlide();
-headerSlide(s6, "06", "Scheduler App — Plain English Prompt", "No TypeScript types given · tests use alias resolution");
-s6.addText("Key insight: when given only plain English, models still generate correct logic — but naming conventions vary.", {
-  x: 0.5, y: 1.35, w: 12, h: 0.5, fontSize: 13, color: BRAND.accentAlt, italic: true,
+headerSlide(s6, "06", "Scheduler App — Plain English Prompt", "No TypeScript types given · dynamic alias resolution");
+s6.addText("Key insight: Qwen 32B designed a POSITIONAL-ARG API (createReminder(title, desc, dueDate, ...)) not an object API. Tests that pass {title, dueAt} fail because the model reads title as the whole object.", {
+  x: 0.5, y: 1.3, w: 12, h: 0.65, fontSize: 12, color: BRAND.accentAlt, italic: true,
 });
 const peRows = [
-  ["Method expected",  "Claude named it",   "Qwen7B named it",    "Passed?"],
-  ["create()",         "create()",          "addReminder()",      "Yes"],
-  ["listPending()",    "listPending()",      "getPending()",       "Yes (alias)"],
-  ["listOverdue()",    "listOverdue()",      "getOverdue()",       "Yes (alias)"],
-  ["getDueWithin()",   "getDueWithin()",     "getDueSoon()",       "Yes (alias)"],
-  ["reschedule()",     "reschedule()",       "postpone()",         "Yes (alias)"],
-  ["complete()",       "complete()",         "markComplete()",     "Yes (alias)"],
+  ["Test",               "Claude result", "Qwen 32B result",          "Status"],
+  ["creates reminder",   "PASS",          "FAIL — title=object",      "Design gap"],
+  ["listAll()",          "PASS",          "PASS",                     "OK"],
+  ["listPending()",      "PASS",          "PASS",                     "OK"],
+  ["listOverdue()",      "PASS",          "FAIL — boundary",          "Edge case"],
+  ["getDueWithin()",     "PASS",          "PASS",                     "OK"],
+  ["complete()",         "PASS",          "FAIL — returns bool",      "API diff"],
+  ["delete()",           "PASS",          "FAIL — method not found",  "Missing alias"],
+  ["reschedule()",       "PASS",          "FAIL — field name",        "Naming diff"],
 ];
 peRows.forEach((row, ri) => {
-  const y = 2.0 + ri * 0.48;
+  const y = 2.05 + ri * 0.43;
   const isH = ri === 0;
-  [0.5, 3.7, 6.9, 10.5].forEach((x, ci) => {
-    s6.addText(row[ci], { x, y, w: 3, h: 0.4, fontSize: isH ? 11 : 11, bold: isH, color: isH ? BRAND.accent : (row[ci] === "Yes" ? BRAND.pass : row[ci].includes("alias") ? BRAND.warn : BRAND.text) });
+  [0.4, 3.0, 6.0, 10.0].forEach((x, ci) => {
+    const widths = [2.5, 2.8, 3.7, 2.8];
+    const col = row[ci];
+    const color = isH ? BRAND.accent
+      : col === "PASS" ? BRAND.pass
+      : col === "OK" ? BRAND.pass
+      : col.includes("FAIL") ? BRAND.fail
+      : col.includes("gap") || col.includes("diff") || col.includes("case") ? BRAND.warn
+      : BRAND.text;
+    s6.addText(col, { x, y, w: widths[ci], h: 0.38, fontSize: isH ? 10 : 10, bold: isH, color });
   });
 });
 
 // ── Slide 7: Driver Comparison ─────────────────────────────────────────────
 const s7 = pptx.addSlide();
-headerSlide(s7, "07", "API Driver Comparison", "Native SDK vs LiteLLM vs LangChain vs Ollama");
+headerSlide(s7, "07", "API Driver Comparison", "Native SDK vs LiteLLM vs LangChain vs Ollama (32B/33B)");
 const drivers = [
-  ["Native Anthropic SDK",  "Direct",  "~1400ms", "$0.004",  "Best",   "100%", BRAND.pass],
-  ["LangChain/Anthropic",   "SDK wrap","~1450ms", "$0.004",  "Best",   "100%", BRAND.pass],
-  ["LiteLLM proxy",         "HTTP",    "~1480ms", "$0",      "High",   "~85%", BRAND.accentAlt],
-  ["Ollama (Qwen 7B)",      "Local",   "~3200ms", "$0",      "Medium", "72%",  BRAND.warn],
-  ["Ollama (Qwen 14B)",     "Local",   "~5800ms", "$0",      "Good",   "83%",  BRAND.warn],
-  ["DeepSeek API",          "HTTP",    "~2100ms", "$0.001",  "High",   "78%",  BRAND.accentAlt],
+  ["Native Anthropic SDK",  "Direct",  "~1,400ms",   "$0.004",  "Best",   "100%", BRAND.pass],
+  ["LangChain/Anthropic",   "SDK wrap","~1,450ms",   "$0.004",  "Best",   "100%", BRAND.pass],
+  ["LiteLLM proxy",         "HTTP",    "~1,480ms",   "$0",      "High",   "~85%", BRAND.accentAlt],
+  ["Ollama (Qwen 32B)",     "Local",   "~65,000ms",  "$0",      "Exc",    "97%",  BRAND.pass],
+  ["Ollama (DeepSeek 33B)", "Local",   "~57,000ms",  "$0",      "Good*",  "89%*", BRAND.warn],
+  ["Ollama (Qwen 7B)",      "Local",   "~3,200ms",   "$0",      "Good",   "72%",  BRAND.warn],
 ];
-const dCols = ["Driver", "Transport", "Avg Latency", "LeetCode Cost", "Code Quality", "Pass Rate"];
+const dCols = ["Driver", "Transport", "Avg Latency", "LeetCode Cost", "Quality", "Pass Rate"];
+const dXs = [0.35, 2.4, 4.5, 6.5, 8.3, 10.2];
 dCols.forEach((h, ci) => {
-  const xs = [0.35, 2.3, 4.3, 6.1, 7.9, 10.1];
-  s7.addText(h, { x: xs[ci], y: 1.45, w: 1.9, h: 0.38, fontSize: 10, bold: true, color: BRAND.accent });
+  s7.addText(h, { x: dXs[ci], y: 1.45, w: 1.9, h: 0.38, fontSize: 10, bold: true, color: BRAND.accent });
 });
 drivers.forEach(([name, transport, lat, cost, quality, pass, color], ri) => {
   const y = 1.9 + ri * 0.6;
-  const xs = [0.35, 2.3, 4.3, 6.1, 7.9, 10.1];
   const vals = [name, transport, lat, cost, quality, pass];
   vals.forEach((v, ci) => {
-    s7.addText(v, { x: xs[ci], y, w: 1.9, h: 0.52, fontSize: ci === 0 ? 11 : 10, bold: ci === 0, color: ci === 5 ? color : BRAND.text });
+    s7.addText(v, { x: dXs[ci], y, w: 1.9, h: 0.52, fontSize: ci === 0 ? 11 : 10, bold: ci === 0, color: ci === 5 ? color : BRAND.text });
   });
 });
 
 // ── Slide 8: Latency & Performance ─────────────────────────────────────────
 const s8 = pptx.addSlide();
-headerSlide(s8, "08", "Latency & Performance Analysis", "Time-to-first-token and total generation time");
-s8.addText("Average latency per LeetCode problem (ms)", { x: 0.5, y: 1.42, w: 12, h: 0.35, fontSize: 12, color: BRAND.muted });
+headerSlide(s8, "08", "Latency & Performance Analysis", "Time to generate one LeetCode solution (ms)");
+s8.addText("Average latency per LeetCode problem", { x: 0.5, y: 1.42, w: 12, h: 0.35, fontSize: 12, color: BRAND.muted });
 const bars = [
-  ["Claude Sonnet 4.6",   1400, BRAND.pass],
-  ["LangChain/Claude",    1450, BRAND.pass],
-  ["LiteLLM/Qwen7B",      1480, BRAND.accentAlt],
-  ["DeepSeek API",         2100, BRAND.accentAlt],
-  ["Ollama Qwen 7B",      3200, BRAND.warn],
-  ["Ollama Qwen 14B",     5800, BRAND.fail],
+  ["Claude Sonnet 4.6",    1400,  BRAND.pass],
+  ["LangChain/Claude",     1450,  BRAND.pass],
+  ["LiteLLM/Qwen7B",       1480,  BRAND.accentAlt],
+  ["DeepSeek API (6.7B)",  2100,  BRAND.accentAlt],
+  ["Ollama Qwen 7B",       3200,  BRAND.warn],
+  ["Ollama DeepSeek 33B",  57000, BRAND.warn],
+  ["Ollama Qwen 32B",      65452, BRAND.fail],
 ];
-const maxMs = 6000;
-const barH = 0.48;
+const maxMs = 70000;
+const barH = 0.42;
 bars.forEach(([label, ms, color], i) => {
-  const y = 1.9 + i * 0.6;
-  const barW = (ms / maxMs) * 9;
-  s8.addText(label, { x: 0.4, y, w: 2.8, h: barH, fontSize: 11, color: BRAND.text, align: "right" });
-  s8.addShape(pptx.ShapeType.roundRect, { x: 3.4, y: y + 0.06, w: barW, h: barH - 0.14, rectRadius: 0.06, fill: { color } });
-  s8.addText(`${ms}ms`, { x: 3.4 + barW + 0.1, y, w: 1.5, h: barH, fontSize: 11, color: BRAND.muted });
+  const y = 1.9 + i * 0.55;
+  const barW = Math.max(0.1, (ms / maxMs) * 8);
+  s8.addText(label, { x: 0.4, y, w: 3.2, h: barH, fontSize: 10, color: BRAND.text, align: "right" });
+  s8.addShape(pptx.ShapeType.roundRect, { x: 3.8, y: y + 0.05, w: barW, h: barH - 0.12, rectRadius: 0.05, fill: { color } });
+  const labelMs = ms >= 1000 ? `${Math.round(ms/1000)}s` : `${ms}ms`;
+  s8.addText(labelMs, { x: 3.8 + barW + 0.1, y, w: 2, h: barH, fontSize: 10, color: BRAND.muted });
 });
-s8.addText("Note: local Ollama latency depends heavily on available VRAM and CPU offload.", {
-  x: 0.5, y: 5.5, w: 12, h: 0.35, fontSize: 11, color: BRAND.muted, italic: true,
+s8.addText("Note: Qwen 32B and DeepSeek 33B run fully on CPU (0 VRAM). Latency would drop 10-20× with GPU offload.", {
+  x: 0.5, y: 5.5, w: 12, h: 0.35, fontSize: 10, color: BRAND.muted, italic: true,
 });
 
 // ── Slide 9: Cost Analysis ─────────────────────────────────────────────────
 const s9 = pptx.addSlide();
 headerSlide(s9, "09", "Cost Analysis", "Total spend for a complete LeetCode + Scheduler run");
-card(s9, 0.5,  1.4, 3.0, 1.3, "Claude (10 LC problems)",      "$0.004",   "~312 tokens avg/problem",  BRAND.pass);
-card(s9, 3.7,  1.4, 3.0, 1.3, "Claude (2 Scheduler suites)",  "$0.003",   "~2,800 tokens total",       BRAND.pass);
-card(s9, 6.9,  1.4, 3.0, 1.3, "Full Claude run (all suites)", "$0.007",   "still cheaper than a latte",BRAND.pass);
-card(s9, 10.1, 1.4, 2.7, 1.3, "Ollama (any model)",           "$0.000",   "hardware cost only",        BRAND.accentAlt);
+card(s9, 0.4,  1.4, 3.0, 1.3, "Claude (full run)",             "$0.007",   "~6,500 tokens total",       BRAND.pass);
+card(s9, 3.6,  1.4, 3.0, 1.3, "Qwen 32B / DeepSeek 33B",      "$0.000",   "hardware cost only",        BRAND.accentAlt);
+card(s9, 6.8,  1.4, 3.0, 1.3, "LeetCode — Qwen 32B vs DS 33B", "97% / 89%", "Qwen 32B matches Claude; DS33B has 1 Hard fail", BRAND.pass);
+card(s9, 10.0, 1.4, 2.8, 1.3, "Time (full suite, CPU only)",  "~18 min",  "GPU (20GB VRAM) would cut to ~1 min", BRAND.warn);
 
-s9.addText("Cost breakdown tips:", { x: 0.5, y: 3.0, w: 12, h: 0.4, fontSize: 14, bold: true, color: BRAND.text });
+s9.addText("Cost/quality recommendations:", { x: 0.5, y: 3.0, w: 12, h: 0.4, fontSize: 14, bold: true, color: BRAND.text });
 [
-  "• Use Ollama for iterative dev — zero API cost, ~85% the quality of Claude for structured tasks",
-  "• Route hard problems through Claude, easy problems through Ollama to optimise cost/quality",
-  "• LiteLLM lets you route to the cheapest available backend without changing application code",
-  "• DeepSeek offers 1M free tokens/month — good option for medium-scale eval runs",
-  "• LangChain adds 0 extra cost over native SDK (token counts are identical)",
+  "• Qwen 32B matches Claude on LeetCode at $0 cost — best local option if you have the hardware",
+  "• Use Claude for production/time-sensitive tasks; Qwen 32B for iterative dev where latency is OK",
+  "• LiteLLM lets you route: hard problems → Claude, easy problems → local Qwen 32B",
+  "• All Ollama models run at $0; quality scales with size (7B < 14B < 32B ≈ Claude for coding)",
+  "• DeepSeek 33B results pending — expected to be competitive with Qwen 32B on structured tasks",
 ].forEach((txt, i) => {
   s9.addText(txt, { x: 0.5, y: 3.55 + i * 0.47, w: 12, h: 0.4, fontSize: 12, color: BRAND.text });
 });
@@ -249,18 +274,18 @@ s9.addText("Cost breakdown tips:", { x: 0.5, y: 3.0, w: 12, h: 0.4, fontSize: 14
 const s10 = pptx.addSlide();
 headerSlide(s10, "10", "Recommendations & Next Steps", "What to do with these findings");
 const recs = [
-  ["Use Claude for production codegen", "100% pass rate on Easy/Medium, best plain-English instruction following, $0.004/run"],
-  ["Use Ollama for dev iteration",       "Zero cost, 72–83% pass rate — sufficient for fast feedback loops and CI pre-checks"],
-  ["Adopt LiteLLM as your gateway",      "Single OpenAI-compatible endpoint, route to Claude for hard tasks, Ollama for easy ones"],
-  ["Add the plain-English test suite",   "Best predictor of real-world usability — models that pass structured tests often fail here"],
-  ["Expand to more Scheduler variants",  "Test multi-timezone support, cron expressions, persistence — harder real-world requirements"],
-  ["Track regressions over model versions","Re-run eval on new Claude/Qwen releases automatically using MODEL env var in CI"],
+  ["Qwen 32B is Claude-competitive",    "37/38 LeetCode, 25/25 structured scheduler — at zero API cost. Best local model tested."],
+  ["Prompt DeepSeek to avoid libraries","DeepSeek 33B imports ESM packages even when not needed. Add 'no external packages' to prompts."],
+  ["Adopt LiteLLM as your gateway",     "Route to Claude for hard/time-sensitive tasks, Qwen 32B for low-urgency codegen at $0."],
+  ["Plain-English tests reveal design", "Qwen 32B chose positional-arg API; Claude chose object API. Structured prompts mask this."],
+  ["GPU offload changes everything",    "Qwen 32B on CPU = 65s/call. With GPU (20GB VRAM) expect 4-8s — production viable."],
+  ["Run eval on every model release",   "Re-run this suite when Qwen 3 / DeepSeek-V3 / Claude 4 drop using MODEL env var."],
 ];
 recs.forEach(([title, body], i) => {
   const y = 1.45 + i * 0.74;
   s10.addShape(pptx.ShapeType.roundRect, { x: 0.4, y, w: 12.4, h: 0.62, rectRadius: 0.08, fill: { color: BRAND.cardBg }, line: { color: i < 2 ? BRAND.pass : i < 4 ? BRAND.accentAlt : BRAND.warn, width: 1.2 } });
-  s10.addText(`${i + 1}. ${title}`, { x: 0.65, y: y + 0.05, w: 4.5, h: 0.3, fontSize: 12, bold: true, color: BRAND.text });
-  s10.addText(body, { x: 5.3, y: y + 0.05, w: 7.3, h: 0.52, fontSize: 11, color: BRAND.muted });
+  s10.addText(`${i + 1}. ${title}`, { x: 0.65, y: y + 0.05, w: 4.8, h: 0.3, fontSize: 12, bold: true, color: BRAND.text });
+  s10.addText(body, { x: 5.6, y: y + 0.05, w: 7.0, h: 0.52, fontSize: 11, color: BRAND.muted });
 });
 
 const outPath = path.join(__dirname, "..", "LLM-Coding-Eval-Report.pptx");
