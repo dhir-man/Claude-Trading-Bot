@@ -40,7 +40,11 @@ Here is what it should do, described in plain English:
 
 Please implement this as a single TypeScript class with an in-memory store.
 The class should be named \`ReminderService\`.
-Export it with: \`module.exports = { ReminderService };\`
+
+Important implementation notes:
+- Use \`crypto.randomUUID()\` (built-in Node.js) for unique IDs — do NOT import the \`uuid\` package
+- Do NOT use any external npm packages — only Node.js built-ins
+- Export it with: \`module.exports = { ReminderService };\`
 
 Respond with only a \`\`\`typescript code block — no explanation.
 `.trim();

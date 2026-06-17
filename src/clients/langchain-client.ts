@@ -1,94 +1,161 @@
+import {
+  ModelClient,
+  CompletionRequest,
+  CompletionResponse,
+} from "./types";
+
+type LangChainBackend = "anthropic" | "openai" | "ollama";
+
 /**
- * LangChain Driver
+ * LangChain driver — wraps LangChain JS ChatModel instances.
  *
- * Wraps either @langchain/anthropic or @langchain/openai in the ModelClient
- * interface, allowing the same test harness to drive Claude or OpenAI-compatible
- * models through LangChain's abstractions (prompt templates, output parsers, etc.)
+ * Supported backends:
+ *   "anthropic" → @langchain/anthropic  ChatAnthropic
+ *   "openai"    → @langchain/openai     ChatOpenAI
+ *   "ollama"    → @langchain/ollama     ChatOllama  (requires: npm i @langchain/ollama)
  *
- * Set in .env:
- *   LANGCHAIN_DRIVER=anthropic   # or "openai"
- *   LANGCHAIN_MODEL=claude-sonnet-4-6
- *   ANTHROPIC_API_KEY=sk-ant-...
- *   OPENAI_API_KEY=sk-...
+ * Env (anthropic backend):
+ *   ANTHROPIC_API_KEY, CLAUDE_MODEL (default "claude-sonnet-4-6")
+ *
+ * Env (openai backend):
+ *   OPENAI_API_KEY, OPENAI_MODEL (default "gpt-4o"), OPENAI_API_BASE_URL
+ *
+ * Env (ollama backend):
+ *   OLLAMA_BASE_URL, QWEN_MODEL / DEEPSEEK_MODEL
  */
-import { ModelClient, CompletionRequest, CompletionResponse, MODEL_PRICING } from "./types";
-
-type LangChainBackend = "anthropic" | "openai";
-
 export class LangChainClient implements ModelClient {
-  name: string;
-  modelId: string;
+  readonly name: string;
+  readonly modelId: string;
   private backend: LangChainBackend;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private chatModel: any = null;
 
-  constructor(
-    backend: LangChainBackend = "anthropic",
-    modelId?: string
-  ) {
+  constructor(backend: LangChainBackend = "anthropic", modelId?: string) {
     this.backend = backend;
-    this.modelId = modelId ?? (backend === "anthropic" ? "claude-sonnet-4-6" : "gpt-4o");
+
+    switch (backend) {
+      case "anthropic":
+        this.modelId = modelId ?? process.env.CLAUDE_MODEL ?? "claude-sonnet-4-6";
+        break;
+      case "openai":
+        this.modelId = modelId ?? process.env.OPENAI_MODEL ?? "gpt-4o";
+        break;
+      case "ollama":
+        this.modelId = modelId ?? process.env.QWEN_MODEL ?? "qwen2.5-coder:7b-instruct-q4_K_M";
+        break;
+      default:
+        this.modelId = modelId ?? "unknown";
+    }
+
     this.name = `LangChain/${backend}/${this.modelId}`;
+  }
+
+  // Lazy-load the LangChain model to avoid top-level import errors when
+  // a backend's package is not installed.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async getModel(): Promise<any> {
+    if (this.chatModel) return this.chatModel;
+
+    switch (this.backend) {
+      case "anthropic": {
+        const { ChatAnthropic } = await import("@langchain/anthropic");
+        this.chatModel = new ChatAnthropic({
+          model: this.modelId,
+          apiKey: process.env.ANTHROPIC_API_KEY,
+          maxTokens: 4096,
+          temperature: 0.1,
+        });
+        break;
+      }
+      case "openai": {
+        const { ChatOpenAI } = await import("@langchain/openai");
+        this.chatModel = new ChatOpenAI({
+          model: this.modelId,
+          apiKey: process.env.OPENAI_API_KEY,
+          configuration: {
+            baseURL: process.env.OPENAI_API_BASE_URL ?? "https://api.openai.com/v1",
+          },
+          maxTokens: 4096,
+          temperature: 0.1,
+        });
+        break;
+      }
+      case "ollama": {
+        // @langchain/ollama is an optional dep — install if needed:
+        //   npm install @langchain/ollama
+        try {
+          const { ChatOllama } = await import("@langchain/ollama" as string);
+          this.chatModel = new ChatOllama({
+            model: this.modelId,
+            baseUrl: process.env.OLLAMA_BASE_URL ?? "http://localhost:11434",
+            temperature: 0.1,
+          });
+        } catch {
+          throw new Error(
+            "@langchain/ollama not installed. Run: npm install @langchain/ollama"
+          );
+        }
+        break;
+      }
+    }
+
+    return this.chatModel;
   }
 
   async isAvailable(): Promise<boolean> {
     try {
-      const llm = await this.buildLLM();
-      // Minimal probe — LangChain models throw if API key is missing/invalid
-      await llm.invoke([{ type: "human", content: "hi" }]);
+      await this.getModel();
       return true;
     } catch {
       return false;
     }
   }
 
-  private async buildLLM(): Promise<{ invoke: (msgs: unknown[]) => Promise<{ content: string }> }> {
-    if (this.backend === "anthropic") {
-      const { ChatAnthropic } = await import("@langchain/anthropic");
-      return new ChatAnthropic({
-        apiKey: process.env.ANTHROPIC_API_KEY,
-        model: this.modelId,
-        maxTokens: 4096,
-      }) as unknown as { invoke: (msgs: unknown[]) => Promise<{ content: string }> };
-    } else {
-      const { ChatOpenAI } = await import("@langchain/openai");
-      return new ChatOpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-        model: this.modelId,
-        maxTokens: 4096,
-        configuration: { baseURL: process.env.OPENAI_API_BASE_URL },
-      }) as unknown as { invoke: (msgs: unknown[]) => Promise<{ content: string }> };
-    }
-  }
-
   async complete(req: CompletionRequest): Promise<CompletionResponse> {
+    const model = await this.getModel();
     const start = Date.now();
-    const llm = await this.buildLLM();
 
-    const msgs = req.messages.map((m) => ({
-      type: m.role === "system" ? "system" : m.role === "assistant" ? "ai" : "human",
-      content: m.content,
-    }));
+    // Build LangChain BaseMessage array
+    const { HumanMessage, SystemMessage, AIMessage } = await import("@langchain/core/messages");
+    const messages = req.messages.map((m) => {
+      if (m.role === "system") return new SystemMessage(m.content);
+      if (m.role === "assistant") return new AIMessage(m.content);
+      return new HumanMessage(m.content);
+    });
 
-    const response = await llm.invoke(msgs);
+    const result = await model.invoke(messages);
     const latencyMs = Date.now() - start;
 
-    const content =
-      typeof response.content === "string"
-        ? response.content
-        : JSON.stringify(response.content);
+    // result is a BaseMessage; content can be string or content block array
+    let content = "";
+    if (typeof result.content === "string") {
+      content = result.content;
+    } else if (Array.isArray(result.content)) {
+      content = result.content
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((b: any) => (typeof b === "string" ? b : b.text ?? ""))
+        .join("");
+    }
 
-    // LangChain doesn't always surface usage — estimate from content length
-    const estimatedTokens = Math.ceil(content.length / 4);
-    const pricing = MODEL_PRICING[this.modelId] ?? { inputPer1M: 0, outputPer1M: 0 };
-    const costUsd = (estimatedTokens / 1_000_000) * pricing.outputPer1M;
+    // Token usage is available on some models via response_metadata
+    const meta = result.response_metadata ?? {};
+    const usage = meta.usage ?? meta.tokenUsage ?? {};
+    const promptTokens =
+      usage.input_tokens ?? usage.prompt_tokens ?? usage.promptTokens ?? 0;
+    const completionTokens =
+      usage.output_tokens ??
+      usage.completion_tokens ??
+      usage.completionTokens ??
+      0;
 
     return {
       content,
-      promptTokens: 0,
-      completionTokens: estimatedTokens,
-      totalTokens: estimatedTokens,
+      model: meta.model_name ?? this.modelId,
+      promptTokens,
+      completionTokens,
+      totalTokens: promptTokens + completionTokens,
       latencyMs,
-      costUsd,
-      modelId: this.modelId,
+      costUsd: 0,
     };
   }
 }

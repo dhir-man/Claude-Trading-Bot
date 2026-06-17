@@ -20,6 +20,7 @@ export function transpileTs(source: string): string {
     compilerOptions: {
       target: ts.ScriptTarget.ES2020,
       module: ts.ModuleKind.CommonJS,
+      esModuleInterop: true,
     },
   });
   return result.outputText;
@@ -29,8 +30,14 @@ export function transpileTs(source: string): string {
 export function evalCode(code: string): Record<string, unknown> {
   const js = transpileTs(code);
   const mod = { exports: {} as Record<string, unknown> };
-  const fn = new Function("module", "exports", "require", js);
-  fn(mod, mod.exports, require);
+  // Inject crypto so generated code can use crypto.randomUUID() without importing
+  const cryptoModule = require("crypto");
+  const requireWithCrypto = (id: string) => {
+    if (id === "crypto") return cryptoModule;
+    return require(id);  // eslint-disable-line @typescript-eslint/no-var-requires
+  };
+  const fn = new Function("module", "exports", "require", "crypto", js);
+  fn(mod, mod.exports, requireWithCrypto, cryptoModule);
   return mod.exports as Record<string, unknown>;
 }
 

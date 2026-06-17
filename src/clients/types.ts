@@ -16,7 +16,8 @@ export interface CompletionResponse {
   totalTokens: number;
   latencyMs: number;
   costUsd?: number;
-  modelId: string;
+  modelId?: string;
+  model?: string;
 }
 
 export interface ModelClient {
